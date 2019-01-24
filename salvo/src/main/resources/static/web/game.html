@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Ship Locations!</title>
+    <meta name="viewport" content="width=divice-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <link rel="stylesheet" href="main.css">
+
+</head>
+
+<body>
+
+    <div id="vue-gameView-app">
+
+        <div>
+            <div class="showGameInfo" v-on:click="seeMygame();">
+                <div class="currentPlayers">
+                 <!--   <h2>{{currentPlayers1}}   VS   {{currentPlayers2}}</h2>-->
+                </div>
+            </div>
+        </div>
+        <div class="allInGame">
+            <div class="left">
+                <h3>Leader Board</h3>
+            </div>
+            <div class="middle">
+                <div class="playerSalvosTable">
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th v-for="columName in tableColums">{{columName}}</th>
+                            </tr>
+                        </thead>
+                        <tbody id="someGameTb">
+                            <tr v-for="rowName in tableRows">
+                                <td>{{rowName}}</td>
+
+                                <template v-for="columName in tableColumsForIDs">
+                                    <td v-bind:id=rowName+columName></td>
+                                </template>
+
+                            </tr>
+                        </tbody>
+
+                    </table>
+                </div>
+
+                <div>
+                    <div class="showGameInfo">
+                        <div class="currentPlayers">
+                            <h2>My salvos table</h2>
+                        </div>
+                    </div>
+                </div>
+
+
+                <div class="playerSalvosTable">
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th v-for="columName in tableColums">{{columName}}</th>
+                            </tr>
+                        </thead>
+                        <tbody id="playerSalvosTb">
+                            <tr v-for="rowName in tableRows">
+                                <td>{{rowName}}</td>
+
+                                <template v-for="columName in tableColumsForIDs">
+                                    <td v-bind:id="'PL'+rowName+columName"></td>
+                                </template>
+
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="right">
+                <h3>Ships</h3>
+                <h4><button class="Ship" v-on:click="creatShips(ships[0])">{{ships[0]}}——3m</button></h4>
+                <h4><button class="Ship" v-on:click="creatShips(ships[1])">{{ships[1]}}——2m</button></h4>
+                <h4><button class="Ship" v-on:click="creatShips(ships[2])">{{ships[2]}}——3m</button></h4>
+                <h3>Place Ships</h3>
+                <h4><button class="Ship" v-on:click="placeShips(currentGpId)">{{ships[2]}}——3m</button></h4>
+            </div>
+            
+
+        </div>
+    </div>
+
+    <script src=" https://cdn.jsdelivr.net/npm/vue/dist/vue.js"> </script>
+    <script src="game.js"></script>
+
+</body>
+
+</html>

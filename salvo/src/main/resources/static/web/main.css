@@ -1,0 +1,311 @@
+@import url(https://fonts.googleapis.com/css?family=Mr+Dafoe);
+@import url(https://fonts.googleapis.com/css?family=Titillium+Web:900);
+@import url(https://fonts.googleapis.com/css?family=Righteous);
+@import url(https://fonts.googleapis.com/css?family=Candal);
+
+@import url(https://fonts.googleapis.com/css?family=Permanent+Marker);
+
+@import url(https://fonts.googleapis.com/css?family=Monoton);
+
+
+/*.......................................first part table..........................................*/
+
+
+body {
+    background-image: url(https://images7.alphacoders.com/584/thumb-1920-584238.jpg);
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+}
+
+.coolTitle {
+    width: 800px;
+    margin-left: auto;
+    margin-right: auto;
+    text-align: center;
+    font-family: fantasy;
+    color: yellow;
+}
+
+.someGameTable {
+    width: 800px;
+    margin-left: auto;
+    margin-right: auto;
+    background-color: rgba(255, 255, 255, 0.5);
+    color: black;
+    text-align: center;
+    font-weight: bolder;
+}
+
+
+.allgames {
+    width: 800px;
+    margin-left: auto;
+    margin-right: auto;
+    color: black;
+    text-align: center;
+    font-weight: bolder;
+}
+
+
+.chrome {
+    background-image: -webkit-linear-gradient(#378DBC 0%, #B6E8F1 46%, #ffffff 50%, #32120E 54%, #FFC488 58%, #582C11 90%, #EC9B4E 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    -webkit-text-stroke: 4px #f5f5f5;
+    font-size: 120px;
+    font-family: 'Titillium Web', sans-serif;
+    font-style: italic;
+    margin: 0;
+    line-height: 1;
+}
+
+.chrome:before {
+    /*  content: 'CHROME';*/
+    position: absolute;
+    left: 0;
+    top: 0;
+    z-index: 0;
+    background-image: -webkit-linear-gradient(-40deg, transparent 0%, transparent 40%, #fff 50%, transparent 60%, transparent 100%);
+    background-position: -680px 0;
+    -webkit-background-clip: text;
+    -webkit-text-stroke: 0;
+    padding-right: 300px;
+    -webkit-animation-name: chrome_effect;
+    -webkit-animation-duration: 6s;
+    -webkit-animation-delay: 2s;
+    -webkit-animation-timing-function: linear;
+    -webkit-animation-iteration-count: infinite;
+}
+
+
+
+.eachGame2 {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 0px;
+    margin-bottom: 5px;
+    padding-bottom: 5px;
+    padding-top: 5px;
+    background-color: rgba(255, 255, 255, 0.5);
+}
+
+.playerInGame {
+    width: 150px;
+}
+
+
+li {
+    list-style-type: none;
+
+}
+
+ol {
+    width: 800px;
+    margin-left: auto;
+    margin-right: auto;
+    padding-bottom: 5px;
+    padding-top: 5px;
+    background-color: rgba(255, 255, 255, 0.5);
+}
+
+.creatGameBg {
+    width: 800px;
+    margin-left: auto;
+    margin-right: auto;
+    padding-bottom: 5px;
+    padding-top: 5px;
+    background-color: rgba(255, 255, 255, 0.5);
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+}
+
+
+td {
+    border: 1px solid black;
+    width: 200px;
+    height: 50px;
+    text-align: center;
+}
+
+tr {
+    height: 50px;
+    text-align: center;
+}
+
+th {
+    text-align: center;
+    font-size: 16px;
+}
+
+table {
+    text-align: center;
+}
+
+h2 {
+    width: 800px;
+    text-align: center;
+    margin-left: auto;
+    margin-right: auto;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    background-color: rgba(100, 100, 100, 0.5);
+    color: white;
+}
+
+.createNewGame {
+    height: 50px;
+    width: 200px;
+    background-color: yellow;
+    border: 3px solid white;
+    border-radius: 20px;
+    color: black;
+}
+
+
+
+/*.......................................main player game table..........................................*/
+
+.playerSalvosTable {
+    height: 550px;
+    width: 800px;
+    margin-left: auto;
+    margin-right: auto;
+    background-color: rgba(255, 255, 255, 0.5);
+    color: black;
+    text-align: center;
+    font-weight: bolder;
+}
+
+.vs {
+    width: 200px;
+    text-align: center
+}
+
+.playerInGame {
+    width: 200px;
+    border: 3px solid white;
+    border-radius: 20px;
+}
+
+.playerInGameWaitting {
+    width: 200px;
+    background-color: red;
+    border: 3px solid white;
+    border-radius: 20px;
+}
+
+
+
+
+/*....................................opponent player game table.......................................*/
+
+.opponentSalvosTable {
+    height: 550px;
+    width: 800px;
+    margin-left: auto;
+    margin-right: auto;
+    background-color: rgba(255, 255, 255, 0.5);
+    color: black;
+    text-align: center;
+    font-weight: bolder;
+}
+
+.login {
+    width: 800px;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 20px;
+}
+
+.logout {
+    width: 800px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.signup {
+    width: 800px;
+    margin-left: auto;
+    margin-right: auto;
+    margin-bottom: 2px;
+}
+
+.inputStyle {
+    padding-left: 10px;
+    width: 200px;
+    height: 30px;
+    border: 10px;
+    color: white;
+    background-color: rgba(255, 255, 255, 0.5);
+}
+
+.signupStyle {
+    width: 194px;
+    height: 30px;
+    border: 10px;
+    background-color: rgba(225, 0, 0, 0.5);
+    color: white;
+}
+
+.loginStyle {
+    width: 192px;
+    height: 30px;
+    border: 10px;
+    background-color: rgba(100, 100, 100, 0.5);
+    color: white;
+}
+
+.logoutStyle {
+    width: 390px;
+    height: 30px;
+    border: 10px;
+    background-color: rgba(100, 100, 100, 0.5);
+    color: white;
+}
+
+.right {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 250px;
+    margin-right: 10px;
+    margin-left: 10px;
+    background-color: rgba(255, 255, 255, 0.5);
+}
+
+.left {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 250px;
+    margin-right: 10px;
+    margin-left: 10px;
+    background-color: rgba(255, 255, 255, 0.5);
+}
+
+.middle {
+    width: 800px;
+    margin-right: 10;
+    margin-left: 10;
+}
+
+.allInGame {
+    margin-right: auto;
+    margin-left: auto;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+}
+
+.Ship {
+    height: 50px;
+    width: 200px;
+    background-color: yellowgreen;
+    border: 3px solid white;
+    border-radius: 5px;
+    color: black;
+}
