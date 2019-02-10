@@ -1,5 +1,6 @@
 package com.codeoftheweb.salvo;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
@@ -64,6 +65,7 @@ public class Score {
         this.player = player;
     }
 
+    @JsonIgnore
     public Player getPlayer() {
         return player;
     }

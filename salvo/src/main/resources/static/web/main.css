@@ -12,10 +12,19 @@
 
 
 body {
-    background-image: url(https://images7.alphacoders.com/584/thumb-1920-584238.jpg);
+    background-image: url(https://images-eds-ssl.xboxlive.com/image?url=8Oaj9Ryq1G1_p3lLnXlsaZgGzAie6Mnu24_PawYuDYIoH77pJ.X5Z.MqQPibUVTc9K3rzTziZ02C_FOvN5ZRoSWZOYMx.EarAUUkkmuVEmInPep9a997FoZxmmo6bhpdlRMMGzNfp1lYldzhxwK7HcCNiZj7f.Vk00AWKY.uhqegyZQCZZjV1P2LB0j43sUrVC3XlknTapQOZEHnekZ1N_DcsmhkbPB0n6Ubkg6xqaI-&h=1080&w=1920&format=jpg);
+    background-size: cover;
     background-repeat: no-repeat;
     background-attachment: fixed;
 }
+
+/*
+body {
+    background-image: url(https://static1.squarespace.com/static/530f924ee4b0ce7399024e62/t/57ac8c17e58c62449d45f89b/1470925848875/ocean+banner.jpg?format=1500w);
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+}
+*/
 
 .coolTitle {
     width: 800px;
@@ -125,27 +134,35 @@ ol {
 
 
 td {
-    border: 1px solid black;
-    width: 200px;
-    height: 50px;
+    width: 80px;
+    height: 80px;
     text-align: center;
+    border: 1px solid white;
 }
 
-tr {
-    height: 50px;
-    text-align: center;
-}
 
 th {
+    height: 80px;
+    border: 1px solid white;
     text-align: center;
     font-size: 16px;
 }
 
-table {
+
+
+.subtitle {
     text-align: center;
+    margin-left: 200px;
+    margin-right: auto;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    background-color: rgba(100, 100, 100, 0.5);
+    font-size: 40px;
+    color: white;
 }
 
-h2 {
+
+.subtitle2 {
     width: 800px;
     text-align: center;
     margin-left: auto;
@@ -153,8 +170,10 @@ h2 {
     padding-top: 5px;
     padding-bottom: 5px;
     background-color: rgba(100, 100, 100, 0.5);
+    font-size: 20px;
     color: white;
 }
+
 
 .createNewGame {
     height: 50px;
@@ -169,12 +188,14 @@ h2 {
 
 /*.......................................main player game table..........................................*/
 
-.playerSalvosTable {
+.tableBeautyfy {
+    /*
     height: 550px;
     width: 800px;
-    margin-left: auto;
+*/
+    margin-left: 200px;
     margin-right: auto;
-    background-color: rgba(255, 255, 255, 0.5);
+    background-color: rgba(255, 255, 255, 0.8);
     color: black;
     text-align: center;
     font-weight: bolder;
@@ -204,8 +225,6 @@ h2 {
 /*....................................opponent player game table.......................................*/
 
 .opponentSalvosTable {
-    height: 550px;
-    width: 800px;
     margin-left: auto;
     margin-right: auto;
     background-color: rgba(255, 255, 255, 0.5);
@@ -215,6 +234,9 @@ h2 {
 }
 
 .login {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
     width: 800px;
     margin-left: auto;
     margin-right: auto;
@@ -249,6 +271,7 @@ h2 {
     border: 10px;
     background-color: rgba(225, 0, 0, 0.5);
     color: white;
+    background-color: red;
 }
 
 .loginStyle {
@@ -257,6 +280,7 @@ h2 {
     border: 10px;
     background-color: rgba(100, 100, 100, 0.5);
     color: white;
+    background-color: gray;
 }
 
 .logoutStyle {
@@ -264,7 +288,8 @@ h2 {
     height: 30px;
     border: 10px;
     background-color: rgba(100, 100, 100, 0.5);
-    color: white;
+    color: black;
+    background-color: yellow;
 }
 
 .right {
@@ -274,24 +299,19 @@ h2 {
     width: 250px;
     margin-right: 10px;
     margin-left: 10px;
-    background-color: rgba(255, 255, 255, 0.5);
+    /*    background-color: rgba(255, 255, 255, 0.5);*/
 }
 
 .left {
     display: flex;
     flex-direction: column;
-    align-items: center;
+    align-items: baseline;
     width: 250px;
     margin-right: 10px;
     margin-left: 10px;
-    background-color: rgba(255, 255, 255, 0.5);
 }
 
-.middle {
-    width: 800px;
-    margin-right: 10;
-    margin-left: 10;
-}
+
 
 .allInGame {
     margin-right: auto;
@@ -301,11 +321,213 @@ h2 {
     justify-content: space-around;
 }
 
-.Ship {
+.ready {
+    height: 100px;
+    width: 100px;
+    background-color: dimgrey;
+    border: 3px solid white;
+    border-radius: 50px;
+    color: white;
+}
+
+.Carrier {
     height: 50px;
     width: 200px;
-    background-color: yellowgreen;
+    background-color: red;
     border: 3px solid white;
     border-radius: 5px;
     color: black;
+}
+
+.carrierImgH {
+    background-image: url("imgs/carrierH.png");
+    background-repeat: no-repeat;
+    width: 400px;
+    height: 80px;
+    position: absolute;
+    border: none
+}
+
+.carrierImgV {
+    background-image: url("imgs/carrierV.png");
+    background-repeat: no-repeat;
+    width: 80px;
+    height: 400px;
+    position: absolute;
+    border: none
+}
+
+.Battleship {
+    height: 50px;
+    width: 200px;
+    background-color: blue;
+    border: 3px solid white;
+    border-radius: 5px;
+    color: black;
+}
+
+.battleshipH {
+    background-image: url("imgs/battleshipH.png");
+    background-repeat: no-repeat;
+    width: 320px;
+    height: 80px;
+    position: absolute;
+    border: none
+}
+
+.battleshipV {
+    background-image: url("imgs/battleshipV.png");
+    background-repeat: no-repeat;
+    width: 80px;
+    height: 320px;
+    position: absolute;
+    border: none
+}
+
+.Submarine {
+    height: 50px;
+    width: 200px;
+    background-color: purple;
+    border: 3px solid white;
+    border-radius: 5px;
+    color: black;
+}
+
+.submarinesH {
+    background-image: url("imgs/submarineH.png");
+    background-repeat: no-repeat;
+    width: 240px;
+    height: 80px;
+    position: absolute;
+    border: none
+}
+
+.submarinesV {
+    background-image: url("imgs/submarineV.png");
+    background-repeat: no-repeat;
+    width: 80px;
+    height: 240px;
+    position: absolute;
+    border: none
+}
+
+.Destroyer {
+    height: 50px;
+    width: 200px;
+    background-color: green;
+    border: 3px solid white;
+    border-radius: 5px;
+    color: black;
+}
+
+.destroyerH {
+    background-image: url("imgs/destroyerH.png");
+    background-repeat: no-repeat;
+    width: 300px;
+    height: 80px;
+    position: absolute;
+    border: none
+}
+
+.destroyerV {
+    background-image: url("imgs/destroyerV.png");
+    background-repeat: no-repeat;
+    width: 80px;
+    height: 300px;
+    position: absolute;
+    border: none
+}
+
+
+.PatrolBoat {
+    height: 50px;
+    width: 200px;
+    background-color: lawnGreen;
+    border: 3px solid white;
+    border-radius: 5px;
+    color: black;
+}
+
+.patrolboatH {
+    background-image: url("imgs/patrolboatH.png");
+    background-repeat: no-repeat;
+    width: 160px;
+    height: 60px;
+    position: absolute;
+    border: none
+}
+
+.patrolboatV {
+    background-image: url("imgs/patrolboatV.png");
+    background-repeat: no-repeat;
+    width: 60px;
+    height: 200px;
+    position: absolute;
+    border: none
+}
+
+.Done {
+    height: 50px;
+    width: 200px;
+    background-color: dimgray;
+    border: 3px solid white;
+    border-radius: 5px;
+    color: black;
+}
+
+
+
+
+.go {
+    height: 100px;
+    width: 100px;
+    background-color: red;
+    border: 3px solid white;
+    border-radius: 50px;
+    color: white;
+}
+
+/*....................................odirections.......................................*/
+
+.directions {
+    width: 200px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+
+.direction {
+    height: 50px;
+    width: 200px;
+    background-color: grey;
+    border: 3px solid white;
+    border-radius: 5px;
+    color: black;
+}
+
+.deploy {
+    height: 100px;
+    width: 200px;
+    background-color: yellow;
+    border: 3px solid white;
+    border-radius: 5px;
+    color: black;
+}
+
+
+.SalvosButton {
+    height: 50px;
+    width: 200px;
+    background-color: aqua;
+    border: 3px solid white;
+    border-radius: 5px;
+    color: black;
+}
+
+/*....................................odirections.......................................*/
+.opponentFireLocation {
+    background-color: deeppink;
+    width: 60px;
+    height: 60px;
 }

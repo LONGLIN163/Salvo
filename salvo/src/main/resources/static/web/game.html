@@ -14,31 +14,34 @@
 
     <div id="vue-gameView-app">
 
+        <div class="coolTitle">
+            <h1 class="chrome">Salvo!!!</h1>
+        </div>
+
         <div>
             <div class="showGameInfo" v-on:click="seeMygame();">
                 <div class="currentPlayers">
-                 <!--   <h2>{{currentPlayers1}}   VS   {{currentPlayers2}}</h2>-->
                 </div>
             </div>
         </div>
         <div class="allInGame">
-            <div class="left">
-                <h3>Leader Board</h3>
-            </div>
+ 
             <div class="middle">
-                <div class="playerSalvosTable">
-                    <table class="table table-bordered">
+                <div class="tableBeautyfy">
+                    <table>
                         <thead>
                             <tr>
                                 <th v-for="columName in tableColums">{{columName}}</th>
                             </tr>
                         </thead>
-                        <tbody id="someGameTb">
+                        <tbody id="myShipsTb">
                             <tr v-for="rowName in tableRows">
                                 <td>{{rowName}}</td>
 
                                 <template v-for="columName in tableColumsForIDs">
-                                    <td v-bind:id=rowName+columName></td>
+
+                                    <td v-bind:id=rowName+columName v-on:click="shipPlace(rowName+columName)" v-on:mouseover="mouseover(rowName+columName)" v-on:mouseout="mouseout(rowName+columName)"></td>
+
                                 </template>
 
                             </tr>
@@ -49,15 +52,15 @@
 
                 <div>
                     <div class="showGameInfo">
-                        <div class="currentPlayers">
-                            <h2>My salvos table</h2>
+                        <div class="subtitle">
+                            My salvos table
                         </div>
                     </div>
                 </div>
 
 
-                <div class="playerSalvosTable">
-                    <table class="table table-bordered">
+                <div class="tableBeautyfy" id="mySalvosTb">
+                    <table>
                         <thead>
                             <tr>
                                 <th v-for="columName in tableColums">{{columName}}</th>
@@ -68,7 +71,7 @@
                                 <td>{{rowName}}</td>
 
                                 <template v-for="columName in tableColumsForIDs">
-                                    <td v-bind:id="'PL'+rowName+columName"></td>
+                                    <td v-bind:id="'PL'+rowName+columName" v-on:click="salvosAim('PL'+rowName+columName)" v-on:mouseover="mouseover('PL'+rowName+columName)" v-on:mouseout="mouseout('PL'+rowName+columName)"></td>
                                 </template>
 
                             </tr>
@@ -77,14 +80,43 @@
                 </div>
             </div>
             <div class="right">
-                <h3>Ships</h3>
-                <h4><button class="Ship" v-on:click="creatShips(ships[0])">{{ships[0]}}——3m</button></h4>
-                <h4><button class="Ship" v-on:click="creatShips(ships[1])">{{ships[1]}}——2m</button></h4>
-                <h4><button class="Ship" v-on:click="creatShips(ships[2])">{{ships[2]}}——3m</button></h4>
-                <h3>Place Ships</h3>
-                <h4><button class="Ship" v-on:click="placeShips(currentGpId)">{{ships[2]}}——3m</button></h4>
+
+                <h4>
+                    <button v-if="CarrierIsSelected!=true" class="Carrier" v-on:click="creatShips('Carrier',5,'red');selecteButton('Carrier')">Carrier</button>
+                </h4>
+
+                <h4>
+                    <button v-if="BattleshipIsSelected!=true" class="Battleship" v-on:click="creatShips('Battleship',4,'blue');selecteButton('Battleship')">Battleship</button>
+
+                </h4>
+
+                <h4>
+                    <button v-if="SubmarineIsSelected!=true" class="Submarine" v-on:click="creatShips('Submarine',3,'purple');selecteButton('Submarine')">Submarine</button>
+                </h4>
+
+                <h4>
+                    <button v-if="DestroyerIsSelected!=true" class="Destroyer" v-on:click="creatShips('Destroyer',3,'green');selecteButton('Destroyer')">Destroyer</button>
+                </h4>
+
+                <h4>
+                    <button v-if="PatrolBoatIsSelected!=true" class="PatrolBoat" v-on:click="creatShips('PatrolBoat',2,'lawnGreen');selecteButton('PatrolBoat')">PatrolBoat</button>
+                </h4>
+
+                <div class="directions">
+                    <h3><button class="direction" v-on:click="changeDirection('horizontal')">Horizontal</button></h3>
+                    <h3><button class="direction" v-on:click="changeDirection('vertical')">Vertical</button></h3>
+                </div>
+
+                <h3><button class="deploy" v-on:click="placeShips(currentGpId)">Deploy Ships</button></h3>
+                
+                <!-----------------------------------------salvos------------------------------------------->
+
+                <h3><button class="direction" v-on:click="aiming(true)">Aim</button></h3>
+                <h3><button class="go" v-on:click="salvosFire(currentGpId)">SALVO</button></h3>
+
+
             </div>
-            
+
 
         </div>
     </div>

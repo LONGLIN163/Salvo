@@ -53,10 +53,10 @@ public class SalvoApplication {
             Player p2 = new Player ("C.obrian",  passwordEncoder.encode ("bbb"));
             playerRepository.save (p2);
 
-            Player p3 = new Player ("Kim Bauer", "ccc");
+            Player p3 = new Player ("Kim Bauer", passwordEncoder.encode ("ccc"));
             playerRepository.save (p3);
 
-            Player p4 = new Player ("T.almeida", "ddd");
+            Player p4 = new Player ("T.almeida", passwordEncoder.encode ("ddd"));
             playerRepository.save (p4);
 
 
@@ -129,14 +129,10 @@ public class SalvoApplication {
             //in game 6
             GamePlayer gp11 = new GamePlayer (new Date (), g6, p3);
             gamePlayerRepository.save (gp11);
-//            GamePlayer gp12 = new GamePlayer (new Date (), g6, p2);
-//            gamePlayerRepository.save (gp12);
 
             //in game 7
             GamePlayer gp13 = new GamePlayer (new Date (), g7, p4);
             gamePlayerRepository.save (gp13);
-//            GamePlayer gp14 = new GamePlayer (new Date (), g7, p1);//p4=NA
-//            gamePlayerRepository.save (gp14);
 
             //in game 8
             GamePlayer gp15 = new GamePlayer (new Date (), g8, p3);
@@ -236,13 +232,6 @@ public class SalvoApplication {
             Ship ship23 = new Ship ("Patrol Boat", Arrays.asList ("C6", "C7"), gp11);
             shipRepository.save (ship23);
 
-            //gamePlayer12-ship
-//            Ship ship24 = new Ship ("Submarine", Arrays.asList ("A2", "A3", "A4"), gp12);
-//            shipRepository.save (ship24);
-//
-//            Ship ship25 = new Ship ("Patrol Boat", Arrays.asList ("G6", "H6"), gp12);
-//            shipRepository.save (ship25);
-
 
             //in game 7
             //gamePlayer13-ship
@@ -251,14 +240,6 @@ public class SalvoApplication {
 
             Ship ship27 = new Ship ("Patrol Boat", Arrays.asList ("C6", "C7"), gp13);
             shipRepository.save (ship27);
-
-            //gamePlayer14-ship
-//            Ship ship28 = new Ship ("Submarine", Arrays.asList ("A2", "A3", "A4"), gp14);
-//            shipRepository.save (ship28);
-//
-//            Ship ship29 = new Ship ("Patrol Boat", Arrays.asList ("G6", "H6"), gp14);
-//            shipRepository.save (ship29);
-
 
             //in game 8
             //gamePlayer15-ship
@@ -274,31 +255,6 @@ public class SalvoApplication {
 
             Ship ship33 = new Ship ("Patrol Boat", Arrays.asList ("G6", "H6"), gp16);
             shipRepository.save (ship33);
-
-
-
-//            /*---------------------create salvos and store salvos json database-------------------------*/
-//
-//            //gamePlayer1-Salvo
-//            Salvo salvo1 = new Salvo (1, Arrays.asList ("H7", "H3", "H10"), gp1);
-//            salvoRepository.save (salvo1);
-//
-//            Salvo salvo2 = new Salvo (2, Arrays.asList ("E6", "F8", "G3"), gp1);
-//            salvoRepository.save (salvo2);
-//
-//            Salvo salvo3 = new Salvo (3, Arrays.asList ("B7", "B1"), gp1);
-//            salvoRepository.save (salvo3);
-//
-//            //gamePlayer2-Salvo
-//            Salvo salvo4 = new Salvo (1, Arrays.asList ("E2", "G3", "H4"), gp2);
-//            salvoRepository.save (salvo4);
-//
-//            Salvo salvo5 = new Salvo (2, Arrays.asList ("H1", "F1", "G8"), gp2);
-//            salvoRepository.save (salvo5);
-//
-//            Salvo salvo6 = new Salvo (3, Arrays.asList ("A4", "B5"), gp2);
-//            salvoRepository.save (salvo6);
-
 
 
             /*---------------------create salvos and store salvos json database-------------------------*/
@@ -414,27 +370,6 @@ public class SalvoApplication {
             scoreRestRepository.save (sc7);
             Score sc8 = new Score (new Date (), g4, p1, 0.0);
             scoreRestRepository.save (sc8);
-
-//            Score sc9 = new Score (new Date (), g5, p4, 0.5);
-//            scoreRestRepository.save (sc9);
-//            Score sc10 = new Score (new Date (), g5, p1, 0.5);
-//            scoreRestRepository.save (sc10);
-
-//            Score sc11 = new Score (new Date (), g6, p3, 1.00);
-//            scoreRestRepository.save (sc11);
-//            Score sc12 = new Score (new Date (), g6, p2, 0.0);
-//            scoreRestRepository.save (sc12);
-
-//            Score sc13 = new Score (new Date (), g7, p4, 1.00);
-//            scoreRestRepository.save (sc13);
-//            Score sc14 = new Score (new Date (), g7, p1, 0.0);
-//            scoreRestRepository.save (sc14);
-
-//            Score sc15 = new Score (new Date (), g8, p3, 1.00);
-//            scoreRestRepository.save (sc15);
-//            Score sc16 = new Score (new Date (), g8, p4, 0.0);
-//            scoreRestRepository.save (sc16);
-
 
         };
     }

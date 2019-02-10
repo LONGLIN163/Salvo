@@ -1,10 +1,12 @@
 package com.codeoftheweb.salvo;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
-import java.util.*;
-import java.util.stream.Collector;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 
@@ -24,7 +26,7 @@ public class GamePlayer {
     private Player player;
 
     @ManyToOne(fetch = FetchType.EAGER)
-    //Each row of the game players data table has a game ID in Column game_id.
+
     @JoinColumn(name="game_id")
     private Game game;
 
@@ -51,10 +53,12 @@ public class GamePlayer {
         return id;
     }
 
+    @JsonIgnore
     public Game getGame() {
         return game;
     }
 
+    @JsonIgnore
     public Player getPlayer() {
         return player;
     }
@@ -73,5 +77,8 @@ public class GamePlayer {
         return salvos;
     }
 
-
+    public void addSalvo(Salvo salvo){
+        salvo.setGamePlayer (this);
+        this.salvos.add(salvo);
+    }
 }
