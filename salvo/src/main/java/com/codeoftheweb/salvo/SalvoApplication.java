@@ -26,6 +26,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import javax.xml.stream.Location;
 import java.lang.reflect.Array;
+import java.util.Date;
 import java.util.*;
 
 @SpringBootApplication
@@ -34,18 +35,90 @@ public class SalvoApplication {
         SpringApplication.run (SalvoApplication.class, args);
     }
 
-
     @Bean
     public BCryptPasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder ();
     }
 
-
     @Bean
     public CommandLineRunner initData(PasswordEncoder passwordEncoder, PlayerRepository playerRepository, GameRepository gameRepository, GamePlayerRepository gamePlayerRepository, ShipRepository shipRepository, SalvoRepository salvoRepository, ScoreRestRepository scoreRestRepository) {
         return (args) -> {
+        };
+    }
+}
 
-            /*-----------------------store the players json data---------------------------------*/
+@Configuration
+class WebSecurityConfiguration extends GlobalAuthenticationConfigurerAdapter {
+
+    @Autowired
+    PlayerRepository playerRepository;
+
+    @Override
+    public void init(AuthenticationManagerBuilder auth) throws Exception {
+        auth.userDetailsService (userName -> {
+            Player player = playerRepository.findByUserName (userName);
+            if (player != null) {
+                return new User (player.getUserName (), player.getPassword (),//why it is new user?????????????????
+                        AuthorityUtils.createAuthorityList ("USER"));
+            } else {
+                throw new UsernameNotFoundException ("Unknown user: " + userName);
+            }
+        });
+    }
+}
+
+@EnableWebSecurity
+@Configuration
+class WebSecurityConfig extends WebSecurityConfigurerAdapter {
+    @Override
+    protected void configure(HttpSecurity http) throws Exception {
+        http.authorizeRequests ()
+                .antMatchers ("/api/**").permitAll ()
+                .antMatchers ("/admin/**").hasAuthority ("ADMIN")
+                .antMatchers ("/web/game.html").hasAuthority ("USER")
+                .antMatchers ("/web/game.js").hasAuthority ("USER")
+                .antMatchers ("/web/games.html").permitAll ()
+                .antMatchers ("/web/games.js").permitAll ()
+                .and ();
+        http.formLogin ()
+                .usernameParameter ("userName")
+                .passwordParameter ("password")
+                .loginPage ("/api/login");
+
+        http.logout ().logoutUrl ("/api/logout");
+        http.csrf ().disable ();
+
+        http.exceptionHandling ().authenticationEntryPoint ((req, res, exc) -> res.sendError (HttpServletResponse.SC_UNAUTHORIZED));
+        http.formLogin ().successHandler ((req, res, auth) -> clearAuthenticationAttributes (req));
+        http.formLogin ().failureHandler ((req, res, exc) -> res.sendError (HttpServletResponse.SC_UNAUTHORIZED));
+        http.logout ().logoutSuccessHandler (new HttpStatusReturningLogoutSuccessHandler ());
+    }
+
+    private void clearAuthenticationAttributes(HttpServletRequest request) {
+        HttpSession session = request.getSession (false);
+        if (session != null) {
+            session.removeAttribute (WebAttributes.AUTHENTICATION_EXCEPTION);
+        }
+    }
+
+}
+
+
+
+
+
+
+
+
+
+
+/*
+    public CommandLineRunner initData(PasswordEncoder passwordEncoder, PlayerRepository playerRepository, GameRepository gameRepository, GamePlayerRepository gamePlayerRepository, ShipRepository shipRepository, SalvoRepository salvoRepository, ScoreRestRepository scoreRestRepository) {
+        return (args) -> {
+
+            */
+/*-----------------------store the players json data---------------------------------*//*
+
 
             Player p1 = new Player ("JackBauer", passwordEncoder.encode ("aaa"));
             playerRepository.save (p1);
@@ -60,7 +133,9 @@ public class SalvoApplication {
             playerRepository.save (p4);
 
 
-            /*-----------------------store the game json data---------------------------------*/
+            */
+/*-----------------------store the game json data---------------------------------*//*
+
 
             Game g1 = new Game (new Date ());
             gameRepository.save (g1);
@@ -94,7 +169,9 @@ public class SalvoApplication {
             gameRepository.save (g8);
 
 
-            /*-----------------------store the gamePlayer json data---------------------------------*/
+            */
+/*-----------------------store the gamePlayer json data---------------------------------*//*
+
 
             //in game 1
             GamePlayer gp1 = new GamePlayer (new Date (), g1, p1);
@@ -141,7 +218,9 @@ public class SalvoApplication {
             gamePlayerRepository.save (gp16);
 
 
-            /*---------------------three ways to store the ships json data---------------------------*/
+            */
+/*---------------------three ways to store the ships json data---------------------------*//*
+
 
             //gamePlayer1-ship
             Ship ship1 = new Ship ("Destroyer", Arrays.asList ("H2", "H3", "H4"), gp1);
@@ -257,11 +336,14 @@ public class SalvoApplication {
             shipRepository.save (ship33);
 
 
-            /*---------------------create salvos and store salvos json database-------------------------*/
+            */
+/*---------------------create salvos and store salvos json database-------------------------*//*
+
 
             //game1
             //gamePlayer1-Salvo
             Salvo salvo1 = new Salvo (1, Arrays.asList ("B5", "C5", "F1"), gp1);
+//            Salvo salvo1 = new Salvo (1, Arrays.asList ("B5", "C5", "F1"), gp1);
             salvoRepository.save (salvo1);
 
             Salvo salvo2 = new Salvo (2, Arrays.asList ("F2", "D5"), gp1);
@@ -349,7 +431,9 @@ public class SalvoApplication {
 
 
 
-            /*-----------------------store the Scores json data---------------------------------*/
+            */
+/*-----------------------store the Scores json data---------------------------------*//*
+
 
             Score sc1 = new Score (new Date (), g1, p1, 1.00);
             scoreRestRepository.save (sc1);
@@ -373,77 +457,8 @@ public class SalvoApplication {
 
         };
     }
-}
-
-@Configuration
-class WebSecurityConfiguration extends GlobalAuthenticationConfigurerAdapter {
-
-    @Autowired
-    PlayerRepository playerRepository;
-
-    @Override
-    public void init(AuthenticationManagerBuilder auth) throws Exception {
-        auth.userDetailsService (userName -> {
-            Player player = playerRepository.findByUserName (userName);
-            if (player != null) {
-                return new User (player.getUserName (), player.getPassword (),//why it is new user?????????????????
-                        AuthorityUtils.createAuthorityList ("USER"));
-            } else {
-                throw new UsernameNotFoundException ("Unknown user: " + userName);
-            }
-        });
-    }
-}
+*/
 
 
-@EnableWebSecurity
-@Configuration
-class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
 
-    @Override
-    protected void configure(HttpSecurity http) throws Exception {
-        http.authorizeRequests ()
-                .antMatchers ("/api/**").permitAll ()
-                .antMatchers ("/admin/**").hasAuthority ("ADMIN")
-                .antMatchers ("/web/game.html").hasAuthority ("USER")
-                .antMatchers ("/web/game.js").hasAuthority ("USER")
-                .antMatchers ("/web/games.html").permitAll ()
-                .antMatchers ("/web/games.js").permitAll ()
-                //.antMatchers ("/api/players").permitAll ()
-
-                //.antMatchers ("/api/game/**/players").permitAll ()
-
-                .and ();
-        http.formLogin ()
-                .usernameParameter ("userName")
-                .passwordParameter ("password")
-                .loginPage ("/api/login");
-
-        //.loginPage ("/web/game.html");
-
-        http.logout ().logoutUrl ("/api/logout");
-        // turn off checking for CSRF tokens
-        http.csrf ().disable ();
-
-        // if user is not authenticated, just send an authentication failure response
-        http.exceptionHandling ().authenticationEntryPoint ((req, res, exc) -> res.sendError (HttpServletResponse.SC_UNAUTHORIZED));
-
-        // if login is successful, just clear the flags asking for authentication
-        http.formLogin ().successHandler ((req, res, auth) -> clearAuthenticationAttributes (req));
-
-        // if login fails, just send an authentication failure response
-        http.formLogin ().failureHandler ((req, res, exc) -> res.sendError (HttpServletResponse.SC_UNAUTHORIZED));
-
-        // if logout is successful, just send a success response
-        http.logout ().logoutSuccessHandler (new HttpStatusReturningLogoutSuccessHandler ());
-    }
-
-    private void clearAuthenticationAttributes(HttpServletRequest request) {
-        HttpSession session = request.getSession (false);
-        if (session != null) {
-            session.removeAttribute (WebAttributes.AUTHENTICATION_EXCEPTION);
-        }
-    }
-
-}

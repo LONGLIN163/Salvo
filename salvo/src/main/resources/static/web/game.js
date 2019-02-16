@@ -25,7 +25,7 @@ var app = new Vue({
         mySalvos: {},
         allSalvosDone: [],
         opponentSlavos: {},
-        ships: ["Submarine", "Patrol Boat", "Destroyer"],
+        ships: ["Submarine", "PatrolBoat", "Destroyer"],
         currentPlayerName: "",
         opponentPlayerName: "",
         currentGpId: "",
@@ -45,6 +45,10 @@ var app = new Vue({
         salvo: {},
         yourSalvos: [],
         aim: false,
+        opponentGameplayerSalvos: {},
+        lastTurnObj: {},
+        lastTurn: "",
+        currentGameplayerSalvos: {},
         json: []
     },
 
@@ -73,6 +77,10 @@ var app = new Vue({
                     console.log(json)
                     app.gameView = json.success;
                     app.mySHips = app.gameView.ships;
+                    app.opponentGameplayerSalvos = app.gameView.opponentGameplayerSalvos;
+                    app.currentGameplayerSalvos = app.gameView.currentGameplayerSalvos;
+                    console.log(app.opponentGameplayerSalvos);
+                    app.opponentHiCurrentPlayer();
 
                     console.log(app.gameView);
                     console.log(app.mySHips);
@@ -98,9 +106,7 @@ var app = new Vue({
                     }
 
                     console.log(app.mySalvos);
-                    app.mySalvosTable();
-                    app.opponentSlavosTable();
-
+                    
                 })
                 .catch(function (error) {
                     console.log("Request failed: " + error.message);
@@ -508,6 +514,7 @@ var app = new Vue({
 
             console.log('click:' + id);
             console.log(this.yourShips)
+            var overId = Array.from(id);
 
             var shipLocationTemp = [];
 
@@ -520,7 +527,6 @@ var app = new Vue({
 
                 if (this.shipDirection == "vertical") {
                     var idPlus = this.tableRows[this.tableRows.indexOf(overId[0]) + i] + overId[1];
-                    console.log("idPlus-click-A2:-----------------" + idPlus);
                 }
 
                 var shipLocation = document.getElementById(idPlus);
@@ -570,7 +576,6 @@ var app = new Vue({
 
                             if (this.shipDirection == "vertical") {
                                 var idPlus = this.tableRows[this.tableRows.indexOf(overId[0]) + i] + overId[1];
-                                console.log("idPlus-click-B2:-----------------" + idPlus);
                             }
 
                             var shipLocation = document.getElementById(idPlus);
@@ -591,12 +596,10 @@ var app = new Vue({
 
                         if (this.shipDirection == "horizontal") {
                             var idPlus = overId[0] + (parseInt(overId[1]) + i);
-                            console.log("idPlus-click-C1:------------------" + idPlus);
                         }
 
                         if (this.shipDirection == "vertical") {
                             var idPlus = this.tableRows[this.tableRows.indexOf(overId[0]) + i] + overId[1];
-                            console.log("idPlus-click-C2:-----------------" + idPlus);
                         }
 
                         var shipLocation = document.getElementById(idPlus);
@@ -612,8 +615,6 @@ var app = new Vue({
 
         salvosAim: function (id) {
             if (this.aim == true) {
-                console.log('click************************************:' + id);
-
                 var overId = Array.from(id);
 
                 var salvosLocation = document.getElementById(id);
@@ -630,43 +631,37 @@ var app = new Vue({
                     }
                 }
 
-                console.log("&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&7" + this.yourSalvos)
             } else {
                 alert("you need to click aim!!!!")
             }
         },
 
-        /*-------------------change table cell color---------------------*/
+        opponentHiCurrentPlayer: function () {
 
-        mySalvosTable: function () {
-            console.log("---------------", this.mySalvos)
-            for (var key in this.mySalvos) {
-                console.log(this.mySalvos[key])
-                for (var key2 in this.mySalvos[key]) {
-                    console.log(this.mySalvos[key][key2])
-                    this.mySalvos[key][key2].forEach(el => {
-                        console.log(el)
-                        document.getElementById(el).style.backgroundColor = "black";
-                        this.allSalvosDone.push(el);
-                    })
+            var arr = Object.keys(this.opponentGameplayerSalvos);
+            var lastTurn = "turn" + arr.length;
+            var lastTurnObj = this.opponentGameplayerSalvos[lastTurn];
+            var lastTurnSalvos = [];
+            for (var key in lastTurnObj) {
+                console.log(lastTurnObj[key])
+                if (lastTurnObj[key].hasOwnProperty('hitsPosition')) {
+                    if (lastTurnObj[key].hitsPosition != 0) {
+                        for (var x = 0; x < lastTurnObj[key].hitsPosition.length; x++) {
+                            lastTurnSalvos.push(lastTurnObj[key].hitsPosition[x])
+                        }
+                    }
                 }
             }
-        },
-        opponentSlavosTable: function () {
-            console.log("---------------", this.opponentSlavos)
-            for (var key in this.opponentSlavos) {
-                console.log(this.opponentSlavos[key])
-                for (var key2 in this.opponentSlavos[key]) {
-                    console.log(this.opponentSlavos[key][key2])
-                    this.opponentSlavos[key][key2].forEach(el => {
-                        console.log(el.replace("PL", ""))
-                        var someDiv = document.createElement("div");
-                        someDiv.setAttribute("class", "opponentFireLocation");
-                        document.getElementById(el.replace("PL", "")).append(someDiv);
-                    })
-                }
-            }
+            console.log(lastTurnSalvos)
+            lastTurnSalvos.forEach(el => {
+                console.log(el.replace("PL", ""))
+                var someDiv = document.createElement("div");
+                someDiv.setAttribute("class", "opponentFireLocation");
+                document.getElementById(el.replace("PL", "")).append(someDiv);
+            })
+
         }
+
     },
 
     computed: {
@@ -677,3 +672,22 @@ var app = new Vue({
     }
 
 });
+
+
+
+
+//        opponentSlavosTable: function () {
+//            console.log("---------------", this.opponentSlavos)
+//            for (var key in this.opponentSlavos) {
+//                console.log(this.opponentSlavos[key])
+//                for (var key2 in this.opponentSlavos[key]) {
+//                    console.log(this.opponentSlavos[key][key2])
+//                    this.opponentSlavos[key][key2].forEach(el => {
+//                        console.log(el.replace("PL", ""))
+//                        var someDiv = document.createElement("div");
+//                        someDiv.setAttribute("class", "opponentFireLocation");
+//                        document.getElementById(el.replace("PL", "")).append(someDiv);
+//                    })
+//                }
+//            }
+//        }

@@ -25,7 +25,7 @@
             </div>
         </div>
         <div class="allInGame">
- 
+
             <div class="middle">
                 <div class="tableBeautyfy">
                     <table>
@@ -80,45 +80,83 @@
                 </div>
             </div>
             <div class="right">
-
                 <h4>
                     <button v-if="CarrierIsSelected!=true" class="Carrier" v-on:click="creatShips('Carrier',5,'red');selecteButton('Carrier')">Carrier</button>
                 </h4>
-
                 <h4>
                     <button v-if="BattleshipIsSelected!=true" class="Battleship" v-on:click="creatShips('Battleship',4,'blue');selecteButton('Battleship')">Battleship</button>
-
                 </h4>
-
                 <h4>
                     <button v-if="SubmarineIsSelected!=true" class="Submarine" v-on:click="creatShips('Submarine',3,'purple');selecteButton('Submarine')">Submarine</button>
                 </h4>
-
                 <h4>
                     <button v-if="DestroyerIsSelected!=true" class="Destroyer" v-on:click="creatShips('Destroyer',3,'green');selecteButton('Destroyer')">Destroyer</button>
                 </h4>
-
                 <h4>
                     <button v-if="PatrolBoatIsSelected!=true" class="PatrolBoat" v-on:click="creatShips('PatrolBoat',2,'lawnGreen');selecteButton('PatrolBoat')">PatrolBoat</button>
                 </h4>
-
                 <div class="directions">
                     <h3><button class="direction" v-on:click="changeDirection('horizontal')">Horizontal</button></h3>
                     <h3><button class="direction" v-on:click="changeDirection('vertical')">Vertical</button></h3>
                 </div>
-
                 <h3><button class="deploy" v-on:click="placeShips(currentGpId)">Deploy Ships</button></h3>
-                
                 <!-----------------------------------------salvos------------------------------------------->
-
                 <h3><button class="direction" v-on:click="aiming(true)">Aim</button></h3>
                 <h3><button class="go" v-on:click="salvosFire(currentGpId)">SALVO</button></h3>
-
-
             </div>
-
-
         </div>
+        <div class="history">
+            <div class="gameHistory">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Turns</th>
+                            <th>Hit on you</th>
+                            <th>Left</th>
+                        </tr>
+                    </thead>
+                    <tbody id="hitsOnYouTb">
+                        <tr v-for="(turnValue,turn) in opponentGameplayerSalvos">
+                            <th class="turns">{{turn}}</th>
+                            <td class="shipStatus">
+                                <template v-for="(shipValue,shipName) in turnValue">
+                                    <div>{{shipName}}------hit:{{shipValue.hitTimes}}-----{{shipValue.shipStatus}}</div>
+                                </template>
+                            </td>
+                            <td class="shipsLeft">{{turnValue.shipsLeft}}</td>
+                        </tr>
+
+                    </tbody>
+                </table>           
+            </div>
+            
+            <div class="gameHistory">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Turns</th>
+                            <th>Hit on Opponent</th>
+                            <th>Left</th>
+                        </tr>
+                    </thead>
+                    <tbody id="hitsOnOppTb">
+                        <tr v-for="(turnValue,turn) in currentGameplayerSalvos">
+                            <th class="turns">{{turn}}</th>
+                            <td class="shipStatus">
+                                <template v-for="(shipValue,shipName) in turnValue">
+                                    <div>{{shipName}}------hit:{{shipValue.hitTimes}}-----{{shipValue.shipStatus}}</div>
+                                </template>
+                            </td>
+                            <td class="shipsLeft">{{turnValue.shipsLeft}}</td>
+                        </tr>
+
+                    </tbody>
+                </table>           
+            </div>
+            
+            
+        </div>
+
     </div>
 
     <script src=" https://cdn.jsdelivr.net/npm/vue/dist/vue.js"> </script>

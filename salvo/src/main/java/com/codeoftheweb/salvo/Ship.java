@@ -18,30 +18,23 @@ public class Ship {
     private Long id;
 
     @ManyToOne(fetch = FetchType.EAGER)
-    //Each row of the game players data table has a game ID in Column game_id.
     @JoinColumn(name="gamePlayer_id")
     private GamePlayer gamePlayer;
 
-
-    //define the shipType variables.
     private String shipType;
 
-    //define the locations variables.create lists of embeddable objects.
     @ElementCollection
     @Column(name="shipLocations")
     private List<String> locations=new ArrayList<String> ();
 
-    //define a default (no-argument) constructor for JPA.
     public Ship(){ }
 
-    //create ship constructor.
     public Ship(String shipType,List<String> locations,GamePlayer gamePlayer){
         this.shipType=shipType;
         this.locations=locations;
         this.gamePlayer=gamePlayer;
     }
 
-    //create methods to set and get info.
     public void setShipType(String shipType) {
         this.shipType = shipType;
     }

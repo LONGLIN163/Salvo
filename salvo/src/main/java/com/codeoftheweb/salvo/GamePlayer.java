@@ -9,19 +9,13 @@ import java.util.HashSet;
 import java.util.Set;
 
 @Entity
-
-// create a Java class GamePlayer with an associated table to represent an instance of a specific player playing a specific game.
-// or the players play the game.
-
 public class GamePlayer {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO, generator = "native")
     @GenericGenerator(name = "native", strategy = "native")
-    //Each row of the game players data table has a GamePlayer id(their own id).
     private Long id;
 
     @ManyToOne(fetch = FetchType.EAGER)
-    //Each row of the game players data table has a player ID in Column player_id.
     @JoinColumn(name="player_id")
     private Player player;
 

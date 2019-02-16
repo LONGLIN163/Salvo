@@ -296,20 +296,17 @@ th {
     display: flex;
     flex-direction: column;
     align-items: center;
-    width: 250px;
+    /*    width: 250px;*/
     margin-right: 10px;
     margin-left: 10px;
-    /*    background-color: rgba(255, 255, 255, 0.5);*/
 }
 
 .left {
-    display: flex;
-    flex-direction: column;
-    align-items: baseline;
-    width: 250px;
-    margin-right: 10px;
-    margin-left: 10px;
+    position: absolute;
+    top: 120px;
+    left: 20px;
 }
+
 
 
 
@@ -332,7 +329,7 @@ th {
 
 .Carrier {
     height: 50px;
-    width: 200px;
+    width: 160px;
     background-color: red;
     border: 3px solid white;
     border-radius: 5px;
@@ -359,7 +356,7 @@ th {
 
 .Battleship {
     height: 50px;
-    width: 200px;
+    width: 160px;
     background-color: blue;
     border: 3px solid white;
     border-radius: 5px;
@@ -386,7 +383,7 @@ th {
 
 .Submarine {
     height: 50px;
-    width: 200px;
+    width: 160px;
     background-color: purple;
     border: 3px solid white;
     border-radius: 5px;
@@ -413,7 +410,7 @@ th {
 
 .Destroyer {
     height: 50px;
-    width: 200px;
+    width: 160px;
     background-color: green;
     border: 3px solid white;
     border-radius: 5px;
@@ -441,7 +438,7 @@ th {
 
 .PatrolBoat {
     height: 50px;
-    width: 200px;
+    width: 160px;
     background-color: lawnGreen;
     border: 3px solid white;
     border-radius: 5px;
@@ -468,7 +465,7 @@ th {
 
 .Done {
     height: 50px;
-    width: 200px;
+    width: 160px;
     background-color: dimgray;
     border: 3px solid white;
     border-radius: 5px;
@@ -490,7 +487,7 @@ th {
 /*....................................odirections.......................................*/
 
 .directions {
-    width: 200px;
+    width: 160px;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
@@ -499,7 +496,7 @@ th {
 
 .direction {
     height: 50px;
-    width: 200px;
+    width: 160px;
     background-color: grey;
     border: 3px solid white;
     border-radius: 5px;
@@ -508,7 +505,7 @@ th {
 
 .deploy {
     height: 100px;
-    width: 200px;
+    width: 160px;
     background-color: yellow;
     border: 3px solid white;
     border-radius: 5px;
@@ -530,4 +527,29 @@ th {
     background-color: deeppink;
     width: 60px;
     height: 60px;
+}
+
+.history{
+    margin-left: 220px;
+    display: flex;
+}
+
+.gameHistory {
+    background-color: beige;
+    margin-top: 10px;
+    width: 440px;
+    font: 6px;
+    background-color: rgba(255, 255, 255, 0.5);
+    text-align: center;
+}
+
+.turns{
+    width: 180px;
+}
+
+.shipStatus{
+    width: 350px;
+}
+.shipsLeft{
+    width: 100px;
 }

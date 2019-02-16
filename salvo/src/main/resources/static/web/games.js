@@ -14,6 +14,7 @@ var app = new Vue({
         changedEachPlayerArr: [],
         games: [],
         currentPlayer: {},
+        currentPlayerGpId: "",
         signupStatus: false,
         loginStatus: false,
         userName: "",
@@ -38,12 +39,13 @@ var app = new Vue({
                     console.log(json);
                     app.data = json;
                     app.currentPlayer = json.player;
+                    console.log(app.currentPlayerGpId)
+                    console.log("currentUser--------------", app.currentPlayer.id);
                     if (json.player.id) {
                         app.makeSthActive("logout");
                         app.loginStatus = true;
                     }
                     app.games = json.games;
-                    //app.changePlayerData();
                     console.log(app.games);
                     console.log(app.games.player);
 
@@ -92,7 +94,6 @@ var app = new Vue({
 
         createNewGame: function () {
 
-
             fetch("/api/games", {
                     credentials: 'include',
                     method: 'POST',
@@ -108,11 +109,11 @@ var app = new Vue({
                 })
                 .then(function (data) {
                     console.log(data);
-                    //app.joinGame(data.success.id);
-
                     if (data.fail) {
                         alert(data.fail);
                     } else {
+                        this.currentPlayerGpId = data.gp1;
+                        console.log(this.currentPlayerGpId)
                         alert("create game success");
                         window.location.assign("http://localhost:8080/web/games.html")
 
@@ -124,100 +125,63 @@ var app = new Vue({
                 });
 
         },
-        //        joinGame: function (gId,pId,gpId) {
-        //
-        //            console.log("gId:" + gId);
-        //            console.log("pId:" + pId);
-        //            console.log("gpId:" + gpId);
-        //
-        //            fetch("/api/game/" + gId + "/players", {
-        //                    credentials: 'include',
-        //                    method: 'POST',
-        //                    headers: {
-        //                        'Content-Type': 'application/json'
-        //                    }
-        //
-        //                })
-        //                .then(function (data) {
-        //
-        //                    return data.json();
-        //
-        //                })
-        //                .then(function (data) {
-        //                    console.log(data);
-        //                    if (data.tip) {
-        //                        alert(data.tip);
-        //                    } else if (data.erro) {
-        //                        alert(data.erro);
-        //                    } else if (data.hi) {
-        //                        alert(data.hi);
-        //                        if (gId == app.currentPlayer.id) {
-        //                            alert("Of course!You can come to your own game!!!")
-        //                            window.location.assign("/web/game.html?gp=" + gpId)
-        //                        }
-        //                    } else if (data.forbidden) {
-        //                        alert(data.forbidden);
-        //                    } else {
-        //                        //if (gId == null) {
-        //                            console.log(data.gp2Id);
-        //                            window.location.assign("/web/game.html?gp=" + data.gp2Id)
-        //                        //}
-        //                    }
-        //
-        //                })
-        //                .catch(function (error) {
-        //                    console.log('Request failure: ', error);
-        //                });
-        //        },
+
 
         joinGame: function (gId, pId, gpId) {
 
             console.log("gId:" + gId);
             console.log("pId:" + pId);
             console.log("gpId:" + gpId);
+            console.log(this.currentPlayer.name + "----" + this.currentPlayer.id)
+            var currentGame = {};
+            console.log(this.games)
+            for (var x = 0; x < this.games.length; x++) {
+                if (gId == this.games[x].id) {
+                    currentGame = this.games[x];
+                    break;
+                }
+            }
 
-            if (pId == "flag") {
-                alert("click the join game button!!!")
+
+            if (currentGame.gamePlayer.length < 2 && (pId != null && pId != currentGame.gamePlayer[0].player.id)) {
+                alert("you can not cheat-------------por favor!!!")
+
             } else {
-
                 fetch("/api/game/" + gId + "/players", {
                         credentials: 'include',
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json'
                         }
-
                     })
                     .then(function (data) {
-
                         return data.json();
-
                     })
                     .then(function (data) {
                         console.log(data);
                         if (data.tip) {
-                            alert(data.tip);
-                        } else if (data.erro) {
-                            alert(data.erro);
-                        } else if (data.hi) {
-
-                            if (pId == app.currentPlayer.id) {
-                                alert("Of course!You can come to your own game!!!")
-                                window.location.assign("/web/game.html?gp=" + gpId)
+                            console.log(data.tip);
+                        } else if (data.currentUserGpID1) {
+                            if (data.currentUserGpID1 == gpId) {
+                                window.location.assign("/web/game.html?gp=" + data.currentUserGpID1)
+                            } else {
+                                alert("you can not cheat,por favor!!!")
                             }
-                            if (pId != app.currentPlayer.id) {
-                                alert(data.hi+"join the other game!!!")
+                        } else if (data.sorry) {
+                            alert(data.sorry);
+                        } else if (data.currentUserGpID2) {
+                            if (data.currentUserGpID2 == gpId) {
+                                window.location.assign("/web/game.html?gp=" + data.currentUserGpID2)
+                            } else {
+                                alert("you can not play with yourself,por favor!!!")
                             }
 
-                        } else if (data.forbidden) {
-                            alert(data.forbidden);
                         } else {
-                            console.log("gp2Id:" + data.gp2Id);
-                            if (pId == null) {
+                            if (gpId == null) {
+                                console.log(data.gp2Id);
+                                alert("where come to this game!!!!");
                                 window.location.assign("/web/game.html?gp=" + data.gp2Id)
                             }
-
-
                         }
                     })
                     .catch(function (error) {
@@ -448,4 +412,113 @@ var app = new Vue({
 //                }
 //            }
 //            console.log(this.games)
+//        },
+
+
+
+//        joinGame: function (gId,pId,gpId) {
+//
+//            console.log("gId:" + gId);
+//            console.log("pId:" + pId);
+//            console.log("gpId:" + gpId);
+//
+//            fetch("/api/game/" + gId + "/players", {
+//                    credentials: 'include',
+//                    method: 'POST',
+//                    headers: {
+//                        'Content-Type': 'application/json'
+//                    }
+//
+//                })
+//                .then(function (data) {
+//
+//                    return data.json();
+//
+//                })
+//                .then(function (data) {
+//                    console.log(data);
+//                    if (data.tip) {
+//                        alert(data.tip);
+//                    } else if (data.erro) {
+//                        alert(data.erro);
+//                    } else if (data.hi) {
+//                        alert(data.hi);
+//                        if (gId == app.currentPlayer.id) {
+//                            alert("Of course!You can come to your own game!!!")
+//                            window.location.assign("/web/game.html?gp=" + gpId)
+//                        }
+//                    } else if (data.forbidden) {
+//                        alert(data.forbidden);
+//                    } else {
+//                        //if (gId == null) {
+//                            console.log(data.gp2Id);
+//                            window.location.assign("/web/game.html?gp=" + data.gp2Id)
+//                        //}
+//                    }
+//
+//                })
+//                .catch(function (error) {
+//                    console.log('Request failure: ', error);
+//                });
+//        },
+
+
+
+
+
+
+//
+// joinGame: function (gId, pId, gpId) {
+//
+//            console.log("gId:" + gId);
+//            console.log("pId:" + pId);
+//            console.log("gpId:" + gpId);
+//
+//            fetch("/api/game/" + gId + "/players", {
+//                    credentials: 'include',
+//                    method: 'POST',
+//                    headers: {
+//                        'Content-Type': 'application/json'
+//                    }
+//
+//                })
+//                .then(function (data) {
+//
+//                    return data.json();
+//
+//                })
+//                .then(function (data) {
+//                    console.log(data);
+//
+//                    if (data.tip) {
+//                        console.log(123);
+//                        alert(data.tip);
+//                    } else if (data.ok1) {
+//                        alert(data.ok1);
+//                        window.location.assign("/web/game.html?gp=" + gpId)
+//                    } else if (data.existingGpId) {
+//                        console.log(data.existingpId);
+//                        console.log(app.currentPlayer.id);
+//                        if (app.currentPlayer.id == data.existingpId) {
+//                            window.location.assign("/web/game.html?gp=" + gpId)
+//                        } else {
+//                            alert("you can not play with yourself!!!");
+//                        }
+//                    } else if (data.sorry) {
+//                        alert(data.sorry);
+//                    } else if (data.forbidden) {
+//                        console.log(data.forbidden);
+//                        alert(data.forbidden);  
+//                    } else {
+//                        console.log(data.gp2Id);
+//                        alert("where come to the new game!!!!");
+//                        window.location.assign("/web/game.html?gp=" + data.gp2Id)
+//                    }
+//                                        
+//
+//                })
+//                .catch(function (error) {
+//                    console.log('Request failure: ', error);
+//                });
+//
 //        },

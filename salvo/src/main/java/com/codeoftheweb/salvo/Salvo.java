@@ -19,24 +19,16 @@ public class Salvo {
 
 
     @ManyToOne(fetch = FetchType.EAGER)
-    //Each row of the game players data table has a game ID in Column game_id.
     @JoinColumn(name="gamePlayer_id")
     private GamePlayer gamePlayer;
 
-    //define the turns variables.
-    private int turn;
-    //private Map<String,Map<String,Object>> turn=new HashMap<>();
+    private Integer turn;
 
-    //define the fire locations variables.create lists of embeddable objects.
     @ElementCollection
     @Column(name="fireLocations")
     private List<String> fireLocations=new ArrayList<String> ();
-
-    //define a default (no-argument) constructor for JPA.
     public Salvo(){ }
-
-    //create Salvo constructor.
-    public Salvo(int turn,List<String> fireLocations,GamePlayer gamePlayer){
+    public Salvo(Integer turn,List<String> fireLocations,GamePlayer gamePlayer){
         this.turn=turn;
         this.fireLocations=fireLocations;
         this.gamePlayer=gamePlayer;
@@ -46,7 +38,7 @@ public class Salvo {
         this.turn = turn;
     }
 
-    public int getTurn() {
+    public Integer getTurn() {
         return turn;
     }
 

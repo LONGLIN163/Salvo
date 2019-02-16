@@ -83,6 +83,48 @@
 
             <div v-for="game in games" class="eachGame2" v-bind:id=game.id>
 
+                <div>
+                    <button class='playerInGame' v-on:click="joinGame(game.id,currentPlayer.id,game.gamePlayer[0].id)">
+                        <h4>{{game.gamePlayer[0].player.name}}</h4>
+                    </button>
+                </div>
+
+                <div class="vs">
+                    <h4> vs </h4>
+                </div>
+
+
+                <div v-if="game.gamePlayer[1]!=null">
+                    <button class="playerInGame" v-on:click="joinGame(game.id,game.gamePlayer[1].player.id,game.gamePlayer[1].id)">
+                        <h4>{{game.gamePlayer[1].player.name}}</h4>
+                    </button>
+                </div>
+
+                <div v-if="game.gamePlayer[1]==null">
+                    <button class="playerInGameWaitting" v-on:click="joinGame(game.id,null,null)">
+                        <h4>join this game</h4>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <script src=" https://cdn.jsdelivr.net/npm/vue/dist/vue.js"> </script>
+    <script src="games.js"></script>
+</body>
+
+</html>
+
+
+
+
+
+<!--
+        <div class="allgames">
+
+            <div v-for="game in games" class="eachGame2" v-bind:id=game.id>
+
                 <div v-if="game.gamePlayer[1]==null">
                     <button class='playerInGame' v-on:click="joinGame(game.id,'flag',null)">
                         <h4>{{game.gamePlayer[0].player.name}}</h4>
@@ -114,11 +156,4 @@
                 </div>
             </div>
         </div>
-    </div>
-
-
-    <script src=" https://cdn.jsdelivr.net/npm/vue/dist/vue.js"> </script>
-    <script src="games.js"></script>
-</body>
-
-</html>
+-->
