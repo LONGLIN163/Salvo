@@ -8,8 +8,8 @@
 @import url(https://fonts.googleapis.com/css?family=Monoton);
 
 
-/*.......................................first part table..........................................*/
 
+/*.......................................part 1..........................................*/
 
 body {
     background-image: url(https://images-eds-ssl.xboxlive.com/image?url=8Oaj9Ryq1G1_p3lLnXlsaZgGzAie6Mnu24_PawYuDYIoH77pJ.X5Z.MqQPibUVTc9K3rzTziZ02C_FOvN5ZRoSWZOYMx.EarAUUkkmuVEmInPep9a997FoZxmmo6bhpdlRMMGzNfp1lYldzhxwK7HcCNiZj7f.Vk00AWKY.uhqegyZQCZZjV1P2LB0j43sUrVC3XlknTapQOZEHnekZ1N_DcsmhkbPB0n6Ubkg6xqaI-&h=1080&w=1920&format=jpg);
@@ -18,13 +18,11 @@ body {
     background-attachment: fixed;
 }
 
-/*
+
+html,
 body {
-    background-image: url(https://static1.squarespace.com/static/530f924ee4b0ce7399024e62/t/57ac8c17e58c62449d45f89b/1470925848875/ocean+banner.jpg?format=1500w);
-    background-repeat: no-repeat;
-    background-attachment: fixed;
+    height: 2600px;
 }
-*/
 
 .coolTitle {
     width: 800px;
@@ -137,26 +135,27 @@ td {
     width: 80px;
     height: 80px;
     text-align: center;
-    border: 1px solid white;
 }
 
 
 th {
     height: 80px;
+    width: 80px;
     border: 1px solid white;
     text-align: center;
     font-size: 16px;
+    background-color: gold;
 }
 
 
 
 .subtitle {
     text-align: center;
-    margin-left: 200px;
     margin-right: auto;
+    margin-left: 240px;
     padding-top: 5px;
     padding-bottom: 5px;
-    background-color: rgba(100, 100, 100, 0.5);
+    /*    background-color: rgba(100, 100, 100, 0.5);*/
     font-size: 40px;
     color: white;
 }
@@ -185,17 +184,13 @@ th {
 }
 
 
-
-/*.......................................main player game table..........................................*/
+/*.......................................part 2..........................................*/
 
 .tableBeautyfy {
-    /*
-    height: 550px;
-    width: 800px;
-*/
-    margin-left: 200px;
+
+    margin-left: 225px;
     margin-right: auto;
-    background-color: rgba(255, 255, 255, 0.8);
+    border: 2px solid white;
     color: black;
     text-align: center;
     font-weight: bolder;
@@ -220,13 +215,10 @@ th {
 }
 
 
-
-
-/*....................................opponent player game table.......................................*/
+/*.......................................part 3..........................................*/
 
 .opponentSalvosTable {
-    margin-left: auto;
-    margin-right: auto;
+    margin-left: 150px;
     background-color: rgba(255, 255, 255, 0.5);
     color: black;
     text-align: center;
@@ -293,12 +285,15 @@ th {
 }
 
 .right {
+    /*
     display: flex;
     flex-direction: column;
+*/
     align-items: center;
-    /*    width: 250px;*/
+    width: 250px;
     margin-right: 10px;
     margin-left: 10px;
+
 }
 
 .left {
@@ -308,7 +303,7 @@ th {
 }
 
 
-
+/*.......................................part 4..........................................*/
 
 .allInGame {
     margin-right: auto;
@@ -342,7 +337,8 @@ th {
     width: 400px;
     height: 80px;
     position: absolute;
-    border: none
+    border: none;
+    z-index: -2;
 }
 
 .carrierImgV {
@@ -351,7 +347,8 @@ th {
     width: 80px;
     height: 400px;
     position: absolute;
-    border: none
+    border: none;
+    z-index: -2;
 }
 
 .Battleship {
@@ -369,7 +366,8 @@ th {
     width: 320px;
     height: 80px;
     position: absolute;
-    border: none
+    border: none;
+    z-index: -2;
 }
 
 .battleshipV {
@@ -378,7 +376,8 @@ th {
     width: 80px;
     height: 320px;
     position: absolute;
-    border: none
+    border: none;
+    z-index: -2;
 }
 
 .Submarine {
@@ -396,7 +395,8 @@ th {
     width: 240px;
     height: 80px;
     position: absolute;
-    border: none
+    border: none;
+    z-index: -2;
 }
 
 .submarinesV {
@@ -405,7 +405,8 @@ th {
     width: 80px;
     height: 240px;
     position: absolute;
-    border: none
+    border: none;
+    z-index: -2;
 }
 
 .Destroyer {
@@ -423,7 +424,8 @@ th {
     width: 300px;
     height: 80px;
     position: absolute;
-    border: none
+    border: none;
+    z-index: -2;
 }
 
 .destroyerV {
@@ -432,7 +434,8 @@ th {
     width: 80px;
     height: 300px;
     position: absolute;
-    border: none
+    border: none;
+    z-index: -2;
 }
 
 
@@ -451,7 +454,8 @@ th {
     width: 160px;
     height: 60px;
     position: absolute;
-    border: none
+    border: none;
+    z-index: -2;
 }
 
 .patrolboatV {
@@ -460,7 +464,8 @@ th {
     width: 60px;
     height: 200px;
     position: absolute;
-    border: none
+    border: none;
+    z-index: -2;
 }
 
 .Done {
@@ -474,18 +479,7 @@ th {
 
 
 
-
-.go {
-    height: 100px;
-    width: 100px;
-    background-color: red;
-    border: 3px solid white;
-    border-radius: 50px;
-    color: white;
-}
-
-/*....................................odirections.......................................*/
-
+/*.......................................part 5..........................................*/
 .directions {
     width: 160px;
     display: flex;
@@ -513,43 +507,321 @@ th {
 }
 
 
-.SalvosButton {
+
+
+
+.salvoAim {
     height: 50px;
-    width: 200px;
-    background-color: aqua;
+    width: 160px;
+    background-color: yellow;
     border: 3px solid white;
     border-radius: 5px;
     color: black;
+    margin-left: 50px;
+    ;
+    position: fixed;
+    top: 130px;
 }
 
-/*....................................odirections.......................................*/
+
+.go {
+    height: 100px;
+    width: 100px;
+    background-color: red;
+    border: 3px solid white;
+    border-radius: 50px;
+    color: white;
+    margin-left: 85px;
+    position: fixed;
+    top: 200px;
+}
+
+
+
+/*.......................................part 6..........................................*/
+
 .opponentFireLocation {
     background-color: deeppink;
     width: 60px;
     height: 60px;
 }
 
-.history{
-    margin-left: 220px;
+.history {
+    margin-left: 225px;
+    width: 855px;
     display: flex;
+    flex-direction: row;
+    justify-content: space-between;
 }
 
 .gameHistory {
+
+    border: 2px solid white;
     background-color: beige;
     margin-top: 10px;
-    width: 440px;
+    width: 395px;
     font: 6px;
     background-color: rgba(255, 255, 255, 0.5);
     text-align: center;
 }
 
-.turns{
+.gameHistory td {
+    border: 1px solid white;
+}
+
+.turns {
     width: 180px;
 }
 
-.shipStatus{
+.shipStatus {
     width: 350px;
 }
-.shipsLeft{
+
+.shipsLeft {
     width: 100px;
+}
+
+
+
+/*.......................................part 7..........................................*/
+
+
+@-webkit-keyframes blinker {
+    from {
+        opacity: 2.0;
+    }
+
+    to {
+        opacity: 0.4;
+    }
+}
+
+.hitStatusTest1 {
+    height: 80px;
+    width: 80px;
+    border: 2px solid red;
+    box-shadow: 0 0 20px red;
+    -webkit-animation-name: blinker;
+    -webkit-animation-duration: 0.6s;
+    -webkit-animation-iteration-count: infinite;
+    -webkit-animation-timing-function: ease-in-out;
+    -webkit-animation-direction: alternate;
+    opacity: 0.4;
+    z-index: 3;
+
+}
+
+.fire {
+    background: url("imgs/giphy.gif");
+    background-repeat: no-repeat;
+}
+
+.missingPoint {
+    background-color: yellowgreen;
+}
+
+
+
+.turnResult {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+}
+
+
+.gameOver {
+    width: 772px;
+    height: 1100px;
+    background-image: url(imgs/victory.jpg);
+    background-repeat: no-repeat;
+    background-size: contain;
+    position: absolute;
+    top: 205px;
+    margin-left: 305px;
+}
+
+
+.oppTurnText {
+    width: 100%;
+    height: 100%;
+    text-align: center;
+    font-size: 60px;
+    font-weight: 1000;
+    color: yellow;
+    position: absolute;
+    top: 400px;
+    text-shadow: 5px 5px #FF0000;
+}
+
+.winTurnText {
+    width: 100%;
+    height: 100%;
+    text-align: center;
+    font-size: 80px;
+    font-weight: 1000;
+    color: red;
+    position: absolute;
+    top: 450px;
+    text-shadow: 5px 5px yellow;
+
+}
+
+.loseTurnText {
+    width: 100%;
+    height: 100%;
+    text-align: center;
+    font-size: 80px;
+    font-weight: 1000;
+    color: darkblue;
+    position: absolute;
+    top: 450px;
+    text-shadow: 5px 5px yellow;
+}
+
+
+.gameBg {
+    width: 855px;
+    margin-left: 225px;
+    height: 2500px;
+    position: absolute;
+    top: 120px;
+    background-color: darkcyan;
+    z-index: -5;
+}
+
+
+
+
+@keyframes attention {
+    from {
+        border-color: red;
+    }
+
+    to {
+        border-color: yellow;
+    }
+}
+
+
+
+.attention {
+    height: 50px;
+    width: 160px;
+    margin-left: 20px;
+    position: fixed;
+    top: 130px;
+    background-color: yellow;
+    border: 3px solid white;
+    border-radius: 5px;
+    color: black;
+
+}
+
+.startStatus {
+    height: 220px;
+    width: 160px;
+    margin-left: 20px;
+    position: fixed;
+    top: 200px;
+    background-color: darkblue;
+    border: 3px solid white;
+    border-radius: 5px;
+    color: white;
+    box-shadow: 0 0 20px red;
+    -webkit-animation-name: attention;
+    -webkit-animation-duration: 0.6s;
+    -webkit-animation-iteration-count: infinite;
+    -webkit-animation-timing-function: ease-in-out;
+    -webkit-animation-direction: alternate;
+}
+
+
+.countTime{
+    height: 120px;
+    width: 120px;
+    margin-left: 40px;
+    position: fixed;
+    top: 450px;
+    background-color: red;
+    border: 3px solid white;
+    border-radius:60px;
+    color: white;
+}
+
+
+
+.gamesExplanation {
+    height: 300px;
+    width: 200px;
+    margin-left: 50px;
+    position: fixed;
+    top: 200px;
+    background-color: darkblue;
+    border: 3px solid white;
+    border-radius: 5px;
+    color: white;
+    box-shadow: 0 0 20px red;
+    -webkit-animation-name: attention;
+    -webkit-animation-duration: 0.6s;
+    -webkit-animation-iteration-count: infinite;
+    -webkit-animation-timing-function: ease-in-out;
+    -webkit-animation-direction: alternate;
+}
+
+.gamesAttention {
+    height: 300px;
+    width: 200px;
+    margin-left: 1100px;
+    position: fixed;
+    top: 200px;
+    background-color: red;
+    border: 3px solid white;
+    border-radius: 5px;
+    color: white;
+    box-shadow: 0 0 20px red;
+    -webkit-animation-name: attention;
+    -webkit-animation-duration: 0.6s;
+    -webkit-animation-iteration-count: infinite;
+    -webkit-animation-timing-function: ease-in-out;
+    -webkit-animation-direction: alternate;
+}
+
+.gamesDetails {
+    font-size: 15px;
+}
+
+
+
+
+.gobackgames1 {
+    height: 30px;
+    width: 80px;
+    margin-left: 60px;
+    position: fixed;
+    top: 380px;
+    background-color: yellow;
+    border: 3px solid white;
+    border-radius: 5px;
+    color: black;
+}
+
+.gameDetails {
+    font-size: 5px;
+}
+
+
+
+.nextGame {
+    width: 300px;
+    height: 80px;
+    position: absolute;
+    top: 600px;
+    margin-left: 260px;
+    background-color: red;
+    font-size: 40px;
+    color: white;
+    border: 2px solid white;
+    border-radius: 10px;
+
 }

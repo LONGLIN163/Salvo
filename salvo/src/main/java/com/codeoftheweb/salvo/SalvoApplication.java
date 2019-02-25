@@ -43,81 +43,6 @@ public class SalvoApplication {
     @Bean
     public CommandLineRunner initData(PasswordEncoder passwordEncoder, PlayerRepository playerRepository, GameRepository gameRepository, GamePlayerRepository gamePlayerRepository, ShipRepository shipRepository, SalvoRepository salvoRepository, ScoreRestRepository scoreRestRepository) {
         return (args) -> {
-        };
-    }
-}
-
-@Configuration
-class WebSecurityConfiguration extends GlobalAuthenticationConfigurerAdapter {
-
-    @Autowired
-    PlayerRepository playerRepository;
-
-    @Override
-    public void init(AuthenticationManagerBuilder auth) throws Exception {
-        auth.userDetailsService (userName -> {
-            Player player = playerRepository.findByUserName (userName);
-            if (player != null) {
-                return new User (player.getUserName (), player.getPassword (),//why it is new user?????????????????
-                        AuthorityUtils.createAuthorityList ("USER"));
-            } else {
-                throw new UsernameNotFoundException ("Unknown user: " + userName);
-            }
-        });
-    }
-}
-
-@EnableWebSecurity
-@Configuration
-class WebSecurityConfig extends WebSecurityConfigurerAdapter {
-    @Override
-    protected void configure(HttpSecurity http) throws Exception {
-        http.authorizeRequests ()
-                .antMatchers ("/api/**").permitAll ()
-                .antMatchers ("/admin/**").hasAuthority ("ADMIN")
-                .antMatchers ("/web/game.html").hasAuthority ("USER")
-                .antMatchers ("/web/game.js").hasAuthority ("USER")
-                .antMatchers ("/web/games.html").permitAll ()
-                .antMatchers ("/web/games.js").permitAll ()
-                .and ();
-        http.formLogin ()
-                .usernameParameter ("userName")
-                .passwordParameter ("password")
-                .loginPage ("/api/login");
-
-        http.logout ().logoutUrl ("/api/logout");
-        http.csrf ().disable ();
-
-        http.exceptionHandling ().authenticationEntryPoint ((req, res, exc) -> res.sendError (HttpServletResponse.SC_UNAUTHORIZED));
-        http.formLogin ().successHandler ((req, res, auth) -> clearAuthenticationAttributes (req));
-        http.formLogin ().failureHandler ((req, res, exc) -> res.sendError (HttpServletResponse.SC_UNAUTHORIZED));
-        http.logout ().logoutSuccessHandler (new HttpStatusReturningLogoutSuccessHandler ());
-    }
-
-    private void clearAuthenticationAttributes(HttpServletRequest request) {
-        HttpSession session = request.getSession (false);
-        if (session != null) {
-            session.removeAttribute (WebAttributes.AUTHENTICATION_EXCEPTION);
-        }
-    }
-
-}
-
-
-
-
-
-
-
-
-
-
-/*
-    public CommandLineRunner initData(PasswordEncoder passwordEncoder, PlayerRepository playerRepository, GameRepository gameRepository, GamePlayerRepository gamePlayerRepository, ShipRepository shipRepository, SalvoRepository salvoRepository, ScoreRestRepository scoreRestRepository) {
-        return (args) -> {
-
-            */
-/*-----------------------store the players json data---------------------------------*//*
 
 
             Player p1 = new Player ("JackBauer", passwordEncoder.encode ("aaa"));
@@ -133,8 +58,6 @@ class WebSecurityConfig extends WebSecurityConfigurerAdapter {
             playerRepository.save (p4);
 
 
-            */
-/*-----------------------store the game json data---------------------------------*//*
 
 
             Game g1 = new Game (new Date ());
@@ -169,12 +92,10 @@ class WebSecurityConfig extends WebSecurityConfigurerAdapter {
             gameRepository.save (g8);
 
 
-            */
-/*-----------------------store the gamePlayer json data---------------------------------*//*
 
 
-            //in game 1
-            GamePlayer gp1 = new GamePlayer (new Date (), g1, p1);
+             //in game 1
+             GamePlayer gp1 = new GamePlayer (new Date (), g1, p1);
             gamePlayerRepository.save (gp1);
             GamePlayer gp2 = new GamePlayer (new Date (), g1, p2);
             gamePlayerRepository.save (gp2);
@@ -218,8 +139,7 @@ class WebSecurityConfig extends WebSecurityConfigurerAdapter {
             gamePlayerRepository.save (gp16);
 
 
-            */
-/*---------------------three ways to store the ships json data---------------------------*//*
+
 
 
             //gamePlayer1-ship
@@ -336,14 +256,11 @@ class WebSecurityConfig extends WebSecurityConfigurerAdapter {
             shipRepository.save (ship33);
 
 
-            */
-/*---------------------create salvos and store salvos json database-------------------------*//*
 
 
             //game1
             //gamePlayer1-Salvo
             Salvo salvo1 = new Salvo (1, Arrays.asList ("B5", "C5", "F1"), gp1);
-//            Salvo salvo1 = new Salvo (1, Arrays.asList ("B5", "C5", "F1"), gp1);
             salvoRepository.save (salvo1);
 
             Salvo salvo2 = new Salvo (2, Arrays.asList ("F2", "D5"), gp1);
@@ -431,33 +348,111 @@ class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
 
 
-            */
-/*-----------------------store the Scores json data---------------------------------*//*
 
-
-            Score sc1 = new Score (new Date (), g1, p1, 1.00);
+            Score sc1 = new Score (g1, p1, 1.00);
             scoreRestRepository.save (sc1);
-            Score sc2 = new Score (new Date (), g1, p2, 0.0);
+            Score sc2 = new Score (g1, p2, 0.0);
             scoreRestRepository.save (sc2);
 
-            Score sc3 = new Score (new Date (), g2, p1, 0.5);
+            Score sc3 = new Score (g2, p1, 0.5);
             scoreRestRepository.save (sc3);
-            Score sc4 = new Score (new Date (), g2, p2, 0.5);
+            Score sc4 = new Score (g2, p2, 0.5);
             scoreRestRepository.save (sc4);
 
-            Score sc5 = new Score (new Date (), g3, p2, 1.00);
+            Score sc5 = new Score (g3, p2, 1.00);
             scoreRestRepository.save (sc5);
-            Score sc6 = new Score (new Date (), g3, p4, 0.0);
+            Score sc6 = new Score (g3, p4, 0.0);
             scoreRestRepository.save (sc6);
 
-            Score sc7 = new Score (new Date (), g4, p2, 1.00);
+            Score sc7 = new Score (g4, p2, 1.00);
             scoreRestRepository.save (sc7);
-            Score sc8 = new Score (new Date (), g4, p1, 0.0);
+            Score sc8 = new Score (g4, p1, 0.0);
             scoreRestRepository.save (sc8);
+
+
 
         };
     }
-*/
+}
+
+@Configuration
+class WebSecurityConfiguration extends GlobalAuthenticationConfigurerAdapter {
+
+    @Autowired
+    PlayerRepository playerRepository;
+
+    @Override
+    public void init(AuthenticationManagerBuilder auth) throws Exception {
+        auth.userDetailsService (userName -> {
+            Player player = playerRepository.findByUserName (userName);
+            if (player != null) {
+                return new User (player.getUserName (), player.getPassword (),//why it is new user?????????????????
+                        AuthorityUtils.createAuthorityList ("USER"));
+            } else {
+                throw new UsernameNotFoundException ("Unknown user: " + userName);
+            }
+        });
+    }
+}
+
+@EnableWebSecurity
+@Configuration
+class WebSecurityConfig extends WebSecurityConfigurerAdapter {
+    @Override
+    protected void configure(HttpSecurity http) throws Exception {
+        http.authorizeRequests ()
+                .antMatchers ("/api/**").permitAll ()
+                .antMatchers ("/admin/**").hasAuthority ("ADMIN")
+                .antMatchers ("/web/game.html").hasAuthority ("USER")
+                .antMatchers ("/web/game.js").hasAuthority ("USER")
+                .antMatchers ("/web/games.html").permitAll ()
+                .antMatchers ("/web/games.js").permitAll ()
+                .and ();
+        http.formLogin ()
+                .usernameParameter ("userName")
+                .passwordParameter ("password")
+                .loginPage ("/api/login");
+
+        http.logout ().logoutUrl ("/api/logout");
+        http.csrf ().disable ();
+
+        http.exceptionHandling ().authenticationEntryPoint ((req, res, exc) -> res.sendError (HttpServletResponse.SC_UNAUTHORIZED));
+        http.formLogin ().successHandler ((req, res, auth) -> clearAuthenticationAttributes (req));
+        http.formLogin ().failureHandler ((req, res, exc) -> res.sendError (HttpServletResponse.SC_UNAUTHORIZED));
+        http.logout ().logoutSuccessHandler (new HttpStatusReturningLogoutSuccessHandler ());
+
+        http.headers().frameOptions().disable();
+    }
+
+    private void clearAuthenticationAttributes(HttpServletRequest request) {
+        HttpSession session = request.getSession (false);
+        if (session != null) {
+            session.removeAttribute (WebAttributes.AUTHENTICATION_EXCEPTION);
+        }
+    }
+
+}
+
+
+//    Score sc1 = new Score (new Date (), g1, p1, 1.00);
+//            scoreRestRepository.save (sc1);
+//                    Score sc2 = new Score (new Date (), g1, p2, 0.0);
+//                    scoreRestRepository.save (sc2);
+//
+//                    Score sc3 = new Score (new Date (), g2, p1, 0.5);
+//                    scoreRestRepository.save (sc3);
+//                    Score sc4 = new Score (new Date (), g2, p2, 0.5);
+//                    scoreRestRepository.save (sc4);
+//
+//                    Score sc5 = new Score (new Date (), g3, p2, 1.00);
+//                    scoreRestRepository.save (sc5);
+//                    Score sc6 = new Score (new Date (), g3, p4, 0.0);
+//                    scoreRestRepository.save (sc6);
+//
+//                    Score sc7 = new Score (new Date (), g4, p2, 1.00);
+//                    scoreRestRepository.save (sc7);
+//                    Score sc8 = new Score (new Date (), g4, p1, 0.0);
+//                    scoreRestRepository.save (sc8);
 
 
 

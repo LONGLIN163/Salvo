@@ -26,11 +26,11 @@ public class Score {
 
     private Double score;
 
-    private Date finishDate;
+//    private Date finishDate;
 
     public Score(){ }
-    public Score(Date finishDate,Game game,Player player, Double score ){
-        this.finishDate=finishDate;
+    public Score(Game game,Player player, Double score ){
+//        this.finishDate=finishDate;
         this.player=player;
         this.game=game;
         this.score=score;
@@ -40,9 +40,14 @@ public class Score {
         return id;
     }
 
-    public Date getFinishDate() {
+/*    public Date getFinishDate() {
         return finishDate;
     }
+
+    public void setFinishDate(Date finishDate){
+        this.finishDate=finishDate;
+    }*/
+
 
     public void setGame(Game game) {
         this.game = game;

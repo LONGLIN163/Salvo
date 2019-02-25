@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
 import java.util.stream.Collectors;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 @RestController
 @RequestMapping("/api")
@@ -34,6 +33,9 @@ public class SalvoController {
     @Autowired
     private GamePlayerRepository gamePlayerRepository;
 
+    @Autowired
+    private ScoreRestRepository scoreRestRepository;
+
 
     @RequestMapping("/games")
     public Map<String, Object> getAllGamesDetails(Authentication authentication) {
@@ -46,6 +48,7 @@ public class SalvoController {
 
         gamesDto.put ("games", gameRepository.findAll ()
                 .stream ()
+                .sorted ((g1, g2) -> (int) (g2.getId ()-(g1.getId ())))
                 .map (game -> makeGameDTO (game))
                 .collect (Collectors.toList ()));
         return  gamesDto;
@@ -58,7 +61,7 @@ public class SalvoController {
 
         gameDto.put ("gamePlayer", game.getGamePlayer ()
                     .stream ()
-                    .sorted ((gp1, gp2) -> gp1.getId ().compareTo (gp2.getId ()))
+                    .sorted ((gp1, gp2) -> gp2.getId ().compareTo (gp1.getId ()))
                     .map (gamePlayer -> makeGamePlayerDTO (gamePlayer))
                     .collect (Collectors.toList ()));
 
@@ -93,239 +96,357 @@ public class SalvoController {
         return playerDto;
     }
 
-
     @RequestMapping(path ="/game_view/{gpID}",method = RequestMethod.GET)
     public ResponseEntity <Map<String, Object>> getGameView(@PathVariable Long gpID,Authentication authentication) {
+            GamePlayer gamePlayer = gamePlayerRepository.getOne (gpID);
+            GamePlayer opponentGamePlayer = findOpponentGameplayer (gpID);
+            Map<String, Object> someGameInfo = new HashMap<> ();
+            if (gamePlayer.getPlayer ().getId () != getCurrentUser (authentication).getId ()) {
+                return new ResponseEntity<> (responseDto ("error", "u r not the ownner of this gamePlayer"), HttpStatus.FORBIDDEN);
+            } else {
+                someGameInfo.put ("id", gamePlayer.getGame ().getId ());
+                someGameInfo.put ("createDate", gamePlayer.getGame ().getDate ());
+                someGameInfo.put ("gamePlayers", gamePlayer.getGame ().getGamePlayer ()
+                        .stream ()
+                        .sorted ((gp1, gp2) -> gp1.getId ().compareTo (gp2.getId ()))
+                        .map (gp -> makeGamePlayerDTO (gp))
+                        .collect (Collectors.toList ()));
+
+                someGameInfo.put ("ships", gamePlayer.getShips ()
+                        .stream ()
+                        .map (ship -> makeShipDto (ship))
+                        .collect (Collectors.toList ()));
+
+                if (opponentGamePlayer != null) {
+                    someGameInfo.put ("hitsOnYou", getHitTurnsDto (gamePlayer, opponentGamePlayer));
+                    someGameInfo.put ("hitsOnOppent", getHitTurnsDto (opponentGamePlayer, gamePlayer));
+                    someGameInfo.put ("gameStatus", makeGameStatus(gamePlayer,gpID));
+                    someGameInfo.put ("score", calculateScore(gamePlayer,gpID));
+                    someGameInfo.put ("oppShipsFromBackLength",opponentGamePlayer.getShips ().size () );
+                    someGameInfo.put ("salvos",gamePlayer.getSalvos ());
+
+                } else {
+                    someGameInfo.put ("gameStatus", "waiting");
+                }
+                return new ResponseEntity<> (responseDto ("success", someGameInfo), HttpStatus.CREATED);
+            }
+    }
+
+    private Map<String,Object> finalShipsStatus(Long gpID){
         GamePlayer gamePlayer = gamePlayerRepository.getOne (gpID);
-        Map<String, Object> someGameInfo = new HashMap<> ();
-        //Game someGameInfo=gamePlayer.getGame ();
-        if (gamePlayer.getPlayer ().getId ()!=getCurrentUser (authentication).getId ()) {
-            return new ResponseEntity<> (responseDto ("error","u r not the ownner of this gamePlayer"), HttpStatus.FORBIDDEN);
+        GamePlayer opponentGamePlayer = findOpponentGameplayer (gpID);
+        Map<String,Object> finalShipsData=new HashMap<> ();
+        if(opponentGamePlayer==null){
+            return null;
         }else {
-        someGameInfo.put ("id", gamePlayer.getGame ().getId ());
-        someGameInfo.put ("createDate", gamePlayer.getGame ().getDate ());
-        someGameInfo.put ("gamePlayers", gamePlayer.getGame ().getGamePlayer ()
-                .stream ()
-                .sorted ((gp1, gp2) -> gp1.getId ().compareTo (gp2.getId ()))
-                .map (gp -> makeGamePlayerDTO (gp))
-                .collect (Collectors.toList ()));
+            Map<String,Object> hitsOnYouTurns=getHitTurnsDto(gamePlayer, opponentGamePlayer);
+            Integer carrierFinalHits=0;
+            Integer BattleshipFinalHits=0;
+            Integer SubmarineFinalHits=0;
+            Integer DestroyerFinalHits=0;
+            Integer PatrolBoatFinalHits=0;
+            for (Map.Entry<String,Object> key : hitsOnYouTurns.entrySet()) {
+                Map<String,Map<String,Object>> ss= (Map<String, Map<String, Object>>) key.getValue();
+                   for (String key2:ss.keySet ()){
+                       if (key2.equals ("CarrierHits")){
+                           carrierFinalHits+=(Integer) ss.get (key2).get ("hitTimes");
+                       }else if(key2.equals ("BattleshipHits")){
+                           BattleshipFinalHits+=(Integer) ss.get (key2).get ("hitTimes");
+                       }else if(key2.equals ("SubmarineHits")){
+                           SubmarineFinalHits+=(Integer) ss.get (key2).get ("hitTimes");
+                       }else if(key2.equals ("DestroyerHits")){
+                           DestroyerFinalHits+=(Integer) ss.get (key2).get ("hitTimes");
+                       }else {
+                           PatrolBoatFinalHits+=(Integer) ss.get (key2).get ("hitTimes");
+                       }
+                   }
+            }
+            Integer totalHits=carrierFinalHits+BattleshipFinalHits+SubmarineFinalHits+DestroyerFinalHits+PatrolBoatFinalHits;
 
-        someGameInfo.put ("ships", gamePlayer.getShips ()
-                .stream ()
-                .map (ship -> makeShipDto (ship))
-                .collect (Collectors.toList ()));
+            Integer totalShipsLeft=5;
 
-        someGameInfo.put ("salvos", gamePlayer.getGame ().getGamePlayer ()
-                .stream ()
-                .map (gp -> makeSalvoDto (gp))
-                .collect (Collectors.toList ()));
+            if(carrierFinalHits==5){
+                totalShipsLeft--;
+            }else if(BattleshipFinalHits==4){
+                totalShipsLeft--;
+            }else if(SubmarineFinalHits==3){
+                totalShipsLeft--;
+            }else if(DestroyerFinalHits==3){
+                totalShipsLeft--;
+            }else if(PatrolBoatFinalHits==2) {
+                totalShipsLeft--;
+            }
+            System.out.println ("tttttttttttttttttttttttttttt"+totalShipsLeft );
 
-        someGameInfo.put("currentGameplayerSalvos",getCurrentGamePlayerSalvoDto(gamePlayer));
-        someGameInfo.put("opponentGameplayerSalvos",getOponentGamePlayerSalvoDto(gamePlayer));
+            finalShipsData.put ("totalHits",totalHits);
+            finalShipsData.put ("totalShipsLeft",totalHits);
+        }
+        return finalShipsData;
+    }
 
-            return new ResponseEntity<> (responseDto ("success",someGameInfo), HttpStatus.CREATED);
+    private String makeGameStatus(GamePlayer gamePlayer,Long gpID){
+            GamePlayer oponentGamePlayer = findOpponentGameplayer(gpID);
+            GamePlayer gameCreator;
+            GamePlayer gameJoinor;
+            String status="waiting";
+
+            if (gamePlayer.getId ()<oponentGamePlayer.getId ()){
+                gameCreator=gamePlayer;
+                gameJoinor=oponentGamePlayer;
+            }else {
+                gameCreator=oponentGamePlayer;
+                gameJoinor=gamePlayer;
+            }
+
+            Map<String,Object> gameCreatorShipsStatus=finalShipsStatus(gameCreator.getId ());
+            Map<String,Object> gameCreatorGetHitTurns=getHitTurnsDto(gameCreator,gameJoinor);
+            Map<String,Object> gameJoinorShipsStatus=finalShipsStatus(gameJoinor.getId ());
+            Map<String,Object> gameJoinorGetHitTurns=getHitTurnsDto(gameJoinor,gameCreator);
+
+            System.out.println ("1111111111---"+gameCreator.getSalvos ().size ());
+            System.out.println ("2222222222---"+gameJoinor.getSalvos ().size ());
+
+            if(gameCreator.getShips ().size ()==0 || gameJoinor.getShips ().size ()==0){
+                if(gamePlayer==gameCreator){
+                    status="waiting";
+                }else {
+                    status="waiting";
+                }
+                return status;
+
+            }else{
+
+                if(gameCreator.getSalvos ().size ()==0 && gameJoinor.getSalvos ().size ()==0){
+                System.out.println ("333333333---"+(gameCreatorGetHitTurns.size ()==0 && gameJoinorGetHitTurns.size ()==0));
+
+                if(gamePlayer==gameCreator){
+                    status="yourTurn";
+                }else {
+                    status="waiting";
+                }
+
+                return status;
+            }else if(gameCreator.getSalvos ().size ()>gameJoinor.getSalvos ().size ()){
+
+                if(gamePlayer==gameCreator){
+                    status="waiting";
+                }else {
+                    status="yourTurn";
+                }
+                return status;
+
+            }else if(gameCreator.getSalvos ().size ()==gameJoinor.getSalvos ().size () && gameCreator.getSalvos ().size ()!=0 && gameJoinor.getSalvos ().size ()!=0){
+
+                if((Integer) gameCreatorShipsStatus.get ("totalShipsLeft")==0 && (Integer)gameJoinorShipsStatus.get ("totalShipsLeft")==0){
+                    status="gameOver,tie";
+                    return status;
+                }
+                if((Integer)gameCreatorShipsStatus.get ("totalShipsLeft")==0 && (Integer)gameJoinorShipsStatus.get ("totalShipsLeft")!=0){
+
+                    if(gamePlayer==gameCreator){
+                        status="gameOver,youLoose";
+                    }else {
+                        status="gameOver,youWin";
+                    }
+                    return status;
+                }
+                if((Integer)gameCreatorShipsStatus.get ("totalShipsLeft")!=0&&(Integer)gameJoinorShipsStatus.get ("totalShipsLeft")==0){
+                    if(gamePlayer==gameCreator){
+                        status="gameOver,youWin";
+                    }else {
+                        status="gameOver,youLoose";
+                    }
+                    return status;
+                }
+                if ((Integer)gameCreatorShipsStatus.get ("totalShipsLeft")!=0 && (Integer)gameJoinorShipsStatus.get ("totalShipsLeft")!=0){
+
+                    if (gamePlayer.getSalvos ().size ()==5 && oponentGamePlayer.getSalvos ().size ()==5){
+
+                        if((Integer) gameCreatorShipsStatus.get ("totalShipsLeft") > (Integer)gameJoinorShipsStatus.get ("totalShipsLeft")){
+
+                            if(gamePlayer==gameCreator){
+                                status="gameOver,youWin";
+                            }else {
+                                status="gameOver,youLoose";
+                            }
+
+                            return status;
+                        }else if((Integer) gameCreatorShipsStatus.get ("totalShipsLeft") < (Integer)gameJoinorShipsStatus.get ("totalShipsLeft")){
+
+                            if(gamePlayer==gameCreator){
+                                status="gameOver,youLoose";
+                            }else {
+                                status="gameOver,youWin";
+                            }
+
+                            return status;
+                        }else {
+                            if ((Integer) gameCreatorShipsStatus.get ("totalHits") > (Integer) gameJoinorShipsStatus.get ("totalHits")) {
+                                if (gamePlayer == gameCreator) {
+                                    status = "gameOver,youLoose";
+                                } else {
+                                    status = "gameOver,youWin";
+                                }
+                                return status;
+                            }else if (gameCreatorShipsStatus.get ("totalHits") == gameJoinorShipsStatus.get ("totalHits")) {
+                                status = "gameOver,tie";
+                                return status;
+                            }else{
+                                if (gamePlayer == gameCreator) {
+                                    status = "gameOver,youWin";
+                                } else {
+                                    status = "gameOver,youLoose";
+                                }
+                                return status;
+                            }
+                        }
+                    }else {
+                        if(gamePlayer==gameCreator){
+                            status="yourTurn";
+                        }else {
+                            status="waiting";
+                        }
+                        return status;
+                    }
+                }
+              }
+            }
+
+        return "Error";
+    }
+
+
+    private double calculateScore(GamePlayer gamePlayer, Long gpID){
+        String gameStatus=makeGameStatus(gamePlayer,gpID);
+        Player player=gamePlayer.getPlayer ();
+        Game game=gamePlayer.getGame ();
+        Score score=new Score ();
+        if (gameStatus.equals ("gameOver,tie")){
+            score.setScore(0.5);
+            score.setGame (game);
+            score.setPlayer (player);
+            player.getScore (game);
+            player.addScore (score);
+            player.getScores ();
+            game.addScore (score);
+            scoreRestRepository.save (score);
+            return 0.5;
+
+        }else if(gameStatus.equals ("gameOver,youWin")){
+            score.setScore(1.0);
+            score.setGame (game);
+            score.setPlayer (player);
+            player.getScore (game);
+            player.addScore (score);
+            player.getScores ();
+            game.addScore (score);
+            scoreRestRepository.save (score);
+            return 1.0;
+        }else if(gameStatus.equals ("gameOver,youLoose")){
+            score.setScore(0.0);
+            score.setGame (game);
+            score.setPlayer (player);
+            player.getScore (game);
+            player.addScore (score);
+            player.getScores ();
+            game.addScore (score);
+            scoreRestRepository.save (score);
+            return 0;
+        }else {
+            return 0;
         }
     }
 
-    private Object getCurrentGamePlayerSalvoDto (GamePlayer gamePlayer){
-        Map<String,Object> turns = new HashMap<> ();
-            Set<Salvo> currentGamePlayerSalvos=gamePlayer.getSalvos ();
-
-            Set <GamePlayer> gamePlayers = gamePlayer.getGame ().getGamePlayer ();
-            GamePlayer opponentGamePlayer = gamePlayers
+    private GamePlayer findOpponentGameplayer(Long gpID){
+        GamePlayer gamePlayer = gamePlayerRepository.getOne (gpID);
+        GamePlayer opponentGamePlayer = gamePlayer.getGame ().getGamePlayer ()
                 .stream ()
-                .filter(gp -> !gp.getId ().equals (gamePlayer.getId ())).findFirst ().orElse (null);
-
-            if(!opponentGamePlayer.equals (null)){
-                Set<Ship> opponentShips=opponentGamePlayer.getShips ();
-                for (Salvo salvo:currentGamePlayerSalvos) {
-                    ArrayList<String> carrierHitsPosition=new ArrayList<> ();
-                    ArrayList<String> battleshipHitsPosition=new ArrayList<> ();
-                    ArrayList<String> submarineHitsPosition=new ArrayList<> ();
-                    ArrayList<String> destroyerHitsPosition=new ArrayList<> ();
-                    ArrayList<String> patrolBoatHitsPosition=new ArrayList<> ();
-
-                    List<String> currentPlayerFireLocations=salvo.getFireLocations ();
-                    for (String OponentFireLocation:currentPlayerFireLocations) {
-                        for (Ship ship : opponentShips) {
-                            if (ship.getShipType ().equals ("Carrier")) {
-                                if (ship.getLocations ().contains (OponentFireLocation.replace ("PL", ""))) {
-                                    carrierHitsPosition.add (OponentFireLocation.replace ("PL", ""));
-                                }
-                            } else if (ship.getShipType ().equals ("Battleship")) {
-                                if (ship.getLocations ().contains (OponentFireLocation.replace ("PL", ""))) {
-                                    battleshipHitsPosition.add (OponentFireLocation.replace ("PL", ""));
-                                }
-                            } else if (ship.getShipType ().equals ("Submarine")) {
-                                if (ship.getLocations ().contains (OponentFireLocation.replace ("PL", ""))) {
-                                    submarineHitsPosition.add (OponentFireLocation.replace ("PL", ""));
-                                }
-                            } else if (ship.getShipType ().equals ("Destroyer")) {
-                                if (ship.getLocations ().contains (OponentFireLocation.replace ("PL", ""))) {
-                                    destroyerHitsPosition.add (OponentFireLocation.replace ("PL", ""));
-                                }
-                            } else {
-                                if (ship.getLocations ().contains (OponentFireLocation.replace ("PL", ""))) {
-                                    patrolBoatHitsPosition.add (OponentFireLocation.replace ("PL", ""));
-                                }
-                            }
-                        }
-                    }
-
-                    Map<String, Object> carrierHits = new HashMap<> ();
-                    carrierHits.put ("hitTimes",carrierHitsPosition.size ());
-                    carrierHits.put ("shipStatus",shipStatus("Carrier",carrierHitsPosition.size ()));
-                    ArrayList<String> carrierHitsPositiontemp=new ArrayList<> ();
-                    carrierHitsPositiontemp.addAll (carrierHitsPosition);
-                    carrierHits.put ("hitsPosition",carrierHitsPositiontemp);
-
-                    Map<String, Object> battleshipHits = new HashMap<> ();
-                    battleshipHits.put ("hitTimes",battleshipHitsPosition.size ());
-                    battleshipHits.put ("shipStatus",shipStatus("Battleship",battleshipHitsPosition.size ()));
-                    ArrayList<String> battleshipHitsPositiontemp=new ArrayList<> ();
-                    battleshipHitsPositiontemp.addAll (battleshipHitsPosition);
-                    battleshipHits.put ("hitsPosition",battleshipHitsPositiontemp);
-
-                    Map<String, Object> submarineHits = new HashMap<> ();
-                    submarineHits.put ("hitTimes",submarineHitsPosition.size ());
-                    submarineHits.put ("shipStatus",shipStatus("Submarine",submarineHitsPosition.size ()));
-                    ArrayList<String> submarineHitsPositiontemp=new ArrayList<> ();
-                    submarineHitsPositiontemp.addAll (submarineHitsPosition);
-                    submarineHits.put ("hitsPosition",submarineHitsPositiontemp);
-
-                    Map<String, Object> destroyerHits = new HashMap<String, Object> ();
-                    destroyerHits.put ("hitTimes", destroyerHitsPosition.size ());
-                    destroyerHits.put ("shipStatus",shipStatus("Destroyer",destroyerHitsPosition.size ()));
-                    ArrayList<String> destroyerHitsPositiontemp=new ArrayList<> ();
-                    destroyerHitsPositiontemp.addAll (destroyerHitsPosition);
-                    destroyerHits.put ("hitsPosition", destroyerHitsPositiontemp);
-
-                    Map<String, Object> patrolBoatHits = new HashMap<> ();
-                    patrolBoatHits.put ("hitTimes",patrolBoatHitsPosition.size ());
-                    patrolBoatHits.put ("shipStatus",shipStatus("PatrolBoat",patrolBoatHitsPosition.size ()));
-                    ArrayList<String> patrolBoatHitsPositiontemp=new ArrayList<> ();
-                    patrolBoatHitsPositiontemp.addAll (patrolBoatHitsPosition);
-                    patrolBoatHits.put ("hitsPosition",patrolBoatHitsPositiontemp);
-
-                    Map<String, Object> currentPlayerHits = new HashMap<> ();
-                    currentPlayerHits.put ("Carrier", carrierHits);
-                    currentPlayerHits.put ("Battleship", battleshipHits);
-                    currentPlayerHits.put ("Submarine", submarineHits);
-                    currentPlayerHits.put ("Destroyer", destroyerHits);
-                    currentPlayerHits.put ("PatrolBoat", patrolBoatHits);
-
-                    currentPlayerHits.put ("shipsLeft", shipsLeft(currentPlayerHits));
-
-                    turns.put ("turn"+salvo.getTurn (),currentPlayerHits );
-                }
-
-                Set<String> set=turns.keySet ();
-                for(String s:set){
-                    Map<String, Object> value= (HashMap<String, Object>) turns.get (s);
-                    Set<String> set2=value.keySet ();
-                    for(String s2:set2){
-                        Object obj=value.get (s2);
-                    }
-                }
-
-                TreeMap<String, Object> turnsTreeMap = new TreeMap<> (
-                        (Comparator<String>) (s1, s2) -> s1.compareTo(s2)
-                );
-                turnsTreeMap.putAll(turns);
-
-                return  turnsTreeMap;
-            }else{
-                return "wating";}
+                .filter(gp -> !gp.getId ().equals (gpID)).findFirst ().orElse (null);
+        if(opponentGamePlayer==null){
+            return null;
+        }else {
+            return opponentGamePlayer;
         }
+    }
 
-    private Object getOponentGamePlayerSalvoDto (GamePlayer gamePlayer){
-        Set <GamePlayer> gamePlayers = gamePlayer.getGame ().getGamePlayer ();
-        Set<Ship> gamePlayerShips=gamePlayer.getShips ();
-        Map<String, Object> turns = new HashMap<String, Object> ();
-        GamePlayer opponentGamePlayer = gamePlayers
-                .stream ()
-                .filter(gp -> !gp.getId ().equals (gamePlayer.getId ())).findFirst ().orElse (null);
+    private Map<String,Object> getHitTurnsDto (GamePlayer gpA,GamePlayer gpB){
+            Map<String,Object> turns = new HashMap<String,Object> ();
+            Set<Ship> gamePlayerShips=gpA.getShips ();
+            Set<Salvo> opponentGamePlayerSalvos=gpB.getSalvos ();
 
-        if(!opponentGamePlayer.equals (null)){
-            ArrayList<String> carrierHitsPosition=new ArrayList<> ();
-            ArrayList<String> battleshipHitsPosition=new ArrayList<> ();
-            ArrayList<String> submarineHitsPosition=new ArrayList<> ();
-            ArrayList<String> destroyerHitsPosition=new ArrayList<> ();
-            ArrayList<String> patrolBoatHitsPosition=new ArrayList<> ();
-
-            Set<Salvo> opponentGamePlayerSalvos=opponentGamePlayer.getSalvos ();
             for (Salvo salvo:opponentGamePlayerSalvos){
+                ArrayList<String> carrierHitsPosition=new ArrayList<> ();
+                ArrayList<String> battleshipHitsPosition=new ArrayList<> ();
+                ArrayList<String> submarineHitsPosition=new ArrayList<> ();
+                ArrayList<String> destroyerHitsPosition=new ArrayList<> ();
+                ArrayList<String> patrolBoatHitsPosition=new ArrayList<> ();
+
                 List<String> opponentFireLocations=salvo.getFireLocations ();
-                    for (String opponentFireLocation:opponentFireLocations){
-                        for(Ship ship:gamePlayerShips) {
-                            if (ship.getShipType ().equals ("Carrier")) {
-                                if (ship.getLocations ().contains (opponentFireLocation.replace ("PL", ""))) {
-                                    carrierHitsPosition.add(opponentFireLocation.replace ("PL", ""));
-                                }
-                            }else if (ship.getShipType ().equals ("Battleship")){
-                                if (ship.getLocations ().contains (opponentFireLocation.replace ("PL", ""))) {
-                                    battleshipHitsPosition.add(opponentFireLocation.replace ("PL", ""));
-                                }
-                            }else if (ship.getShipType ().equals ("Submarine")){
-                                if (ship.getLocations ().contains (opponentFireLocation.replace ("PL", ""))) {
-                                    submarineHitsPosition.add(opponentFireLocation.replace ("PL", ""));
-                                }
-                            }else if (ship.getShipType ().equals ("Destroyer")){
-                                if (ship.getLocations ().contains (opponentFireLocation.replace ("PL", ""))) {
-                                    destroyerHitsPosition.add(opponentFireLocation.replace ("PL", ""));
-                                }
-                            }else{
-                                if (ship.getLocations ().contains (opponentFireLocation.replace ("PL", ""))) {
-                                    patrolBoatHitsPosition.add(opponentFireLocation.replace ("PL", ""));
-                                }
+                for (String opponentFireLocation:opponentFireLocations){
+                    for(Ship ship:gamePlayerShips) {
+                        if (ship.getShipType ().equals ("Carrier")) {
+                            if (ship.getLocations ().contains (opponentFireLocation.replace ("PL", ""))) {
+                                carrierHitsPosition.add(opponentFireLocation.replace ("PL", ""));
+                            }
+                        }else if (ship.getShipType ().equals ("Battleship")){
+                            if (ship.getLocations ().contains (opponentFireLocation.replace ("PL", ""))) {
+                                battleshipHitsPosition.add(opponentFireLocation.replace ("PL", ""));
+                            }
+                        }else if (ship.getShipType ().equals ("Submarine")){
+                            if (ship.getLocations ().contains (opponentFireLocation.replace ("PL", ""))) {
+                                submarineHitsPosition.add(opponentFireLocation.replace ("PL", ""));
+                            }
+                        }else if (ship.getShipType ().equals ("Destroyer")){
+                            if (ship.getLocations ().contains (opponentFireLocation.replace ("PL", ""))) {
+                                destroyerHitsPosition.add(opponentFireLocation.replace ("PL", ""));
+                            }
+                        }else{
+                            if (ship.getLocations ().contains (opponentFireLocation.replace ("PL", ""))) {
+                                patrolBoatHitsPosition.add(opponentFireLocation.replace ("PL", ""));
                             }
                         }
                     }
-
-                    Map<String, Object> carrierHits = new HashMap<> ();
-                    carrierHits.put ("hitsPosition",carrierHitsPosition);
-
-                    Map<String, Object> battleshipHits = new HashMap<String, Object> ();
-                    battleshipHits.put ("hitsPosition",battleshipHitsPosition);
-
-                    Map<String, Object> submarineHits = new HashMap<String, Object> ();
-                    submarineHits.put ("hitsPosition",submarineHitsPosition);
-
-                    Map<String, Object> destroyerHits = new HashMap<String, Object> ();
-                    destroyerHits.put ("hitsPosition", destroyerHitsPosition);
-
-                    Map<String, Object> patrolBoatHits = new HashMap<String, Object> ();
-                    patrolBoatHits.put ("hitsPosition",patrolBoatHitsPosition);
-
-                    Map<String, Object> opponentHits = new HashMap<String, Object> ();
-                    opponentHits.put ("CarrierHits", carrierHits);
-                    opponentHits.put ("BattleshipHits", battleshipHits);
-                    opponentHits.put ("SubmarineHits", submarineHits);
-                    opponentHits.put ("DestroyerHits", destroyerHits);
-                    opponentHits.put ("PatrolBoatHits", patrolBoatHits);
-                    opponentHits.put ("shipsLeft", shipsLeft(opponentHits));
-
-                    turns.put ("turn"+salvo.getTurn (),opponentHits );
-
-            }
-
-            Set<String> set=turns.keySet ();
-            for(String s:set){
-                HashMap<String, Object> value= (HashMap<String, Object>) turns.get (s);
-                Set<String> set2=value.keySet ();
-                for(String s2:set2){
-                    Object obj=value.get (s2);
                 }
+
+                Map<String,Object> carrierHits = new HashMap<String,Object> ();
+                carrierHits.put ("hitTimes",carrierHitsPosition.size ());
+                carrierHits.put ("shipLength",5);
+                carrierHits.put ("hitsPosition",carrierHitsPosition);
+
+                Map<String,Object> battleshipHits = new HashMap<String,Object> ();
+                battleshipHits.put ("hitTimes",battleshipHitsPosition.size ());
+                battleshipHits.put ("shipLength",4 );
+                battleshipHits.put ("hitsPosition",battleshipHitsPosition);
+
+                Map<String,Object> submarineHits = new HashMap<String,Object> ();
+                submarineHits.put ("hitTimes",submarineHitsPosition.size ());
+                submarineHits.put ("shipLength",3);
+                submarineHits.put ("hitsPosition",submarineHitsPosition);
+
+                Map<String,Object> destroyerHits = new HashMap<String,Object> ();
+                destroyerHits.put ("hitTimes", destroyerHitsPosition.size ());
+                destroyerHits.put ("shipLength", 3);
+                destroyerHits.put ("hitsPosition", destroyerHitsPosition);
+
+                Map<String,Object> patrolBoatHits = new HashMap<String,Object> ();
+                patrolBoatHits.put ("hitTimes",patrolBoatHitsPosition.size ());
+                patrolBoatHits.put ("shipLength",2);
+                patrolBoatHits.put ("hitsPosition",patrolBoatHitsPosition);
+
+                Map<String,Object> opponentHits = new HashMap<String,Object> ();
+                opponentHits.put ("CarrierHits", carrierHits);
+                opponentHits.put ("BattleshipHits", battleshipHits);
+                opponentHits.put ("SubmarineHits", submarineHits);
+                opponentHits.put ("DestroyerHits", destroyerHits);
+                opponentHits.put ("PatrolBoatHits", patrolBoatHits);
+                turns.put ("turn"+String.valueOf (salvo.getTurn ()),opponentHits );
             }
 
             TreeMap<String, Object> turnsTreeMap = new TreeMap<> (
                     (Comparator<String>) (s1, s2) -> s1.compareTo(s2)
             );
             turnsTreeMap.putAll(turns);
-
             return  turnsTreeMap;
-        }else{
-        return "wating";}
     }
 
     private int shipsLeft(Map<String, Object> shipsHits) {
@@ -354,7 +475,6 @@ public class SalvoController {
                 }
             }
         }
-
          return num;
     }
 
@@ -366,7 +486,7 @@ public class SalvoController {
         }else if(shipName.equals ("Battleship")){
             shipLength=4;
         }else if(shipName.equals ("Submarine")){
-            shipLength=4;
+            shipLength=3;
         }else if(shipName.equals ("Destroyer")){
             shipLength=3;
         }else{
@@ -383,8 +503,12 @@ public class SalvoController {
         return shipStatus;
     }
 
-    private Map<String, Map<String, Object>> makeSalvoDto(GamePlayer gamePlayer) {
-        Map<String, Map<String, Object>> salvoDto = new HashMap<String, Map<String, Object>> ();
+    private TreeMap<String, Map<String, Object>> makeSalvoDto(GamePlayer gamePlayer) {
+        TreeMap<String, Map<String, Object>> salvoDto = new TreeMap<String, Map<String, Object>> (new Comparator<String>() {
+            public int compare(String t1, String t2) {
+                return Integer.parseInt(t1)-Integer.parseInt(t2);
+            }
+        });
         for (Salvo salvo : gamePlayer.getSalvos ()) {
             Map<String, Object> eachSalvoDto = new HashMap<String, Object> ();
             eachSalvoDto.put (gamePlayer.getId ().toString (), salvo.getFireLocations ());
@@ -402,20 +526,16 @@ public class SalvoController {
 
     @RequestMapping(path = "/players", method = RequestMethod.POST)
     public ResponseEntity<Map<String,Object>> register(@RequestBody Player player) {
-
         if (player.getUserName ().isEmpty () || player.getPassword ().isEmpty ()) {
             return new ResponseEntity<> (responseDto ("error","Missing data"), HttpStatus.NOT_FOUND);
         }
-
         else if (playerRepository.findByUserName (player.getUserName ()) != null) {
             return new ResponseEntity<> (responseDto ("error","Name already in use"), HttpStatus.FORBIDDEN);
         }
-
         else {
         playerRepository.save (new Player (player.getUserName (), passwordEncoder.encode (player.getPassword ())));
         return new ResponseEntity<> (responseDto ("success",player.getUserName ()),HttpStatus.CREATED);}
     }
-
 
     @RequestMapping(path = "/games", method = RequestMethod.POST)
     public ResponseEntity<Map<String,Object>> createNewGame(Authentication authentication) {
@@ -499,39 +619,60 @@ public class SalvoController {
         GamePlayer gp = gamePlayerRepository.getOne (gpId);
         Set<Salvo> salvos = gp.getSalvos ();
 
-        if (isGuest (authentication)) {
+        if (isGuest (authentication)){
             return new ResponseEntity<> (responseDto ("no", "you r no current user logged in!!!"), HttpStatus.UNAUTHORIZED);
         }else if(!getCurrentUser (authentication).getId ().equals (gp.getPlayer ().getId ())){
             return new ResponseEntity<> (responseDto ("sorry","you are not the owner of this game"), HttpStatus.FORBIDDEN);
         }else {
             if(mySalvo.getFireLocations ().size ()<5){
-            return new ResponseEntity<> (responseDto ("insufficient","you can fire more shots!!!"), HttpStatus.FORBIDDEN);
-
-            }else if(mySalvo.getFireLocations ().size ()>5){
-            return new ResponseEntity<> (responseDto ("cross","you can only fire five shots in one turn!!!"), HttpStatus.FORBIDDEN);
-
-            }else {
-            if (salvos.size () == 0) {
-                Salvo salvo = new Salvo ();
-                salvo.setTurn (1);
-                salvo.setFireLocations (mySalvo.getFireLocations ());
-                gp.addSalvo (salvo);
-                salvoRepository.save (salvo);
-                return new ResponseEntity<> (responseDto ("success", salvo), HttpStatus.CREATED);
-            } else {
-                int beforeTurn = salvos.size ();
-                Salvo salvo = new Salvo ();
-                if (beforeTurn < 3) {
-                    salvo.setTurn (beforeTurn + 1);
-                    salvo.setFireLocations (mySalvo.getFireLocations ());
-                    gp.addSalvo (salvo);
-                    salvoRepository.save (salvo);
-                    return new ResponseEntity<> (responseDto ("success", salvo), HttpStatus.CREATED);
-                } else {
-                    return new ResponseEntity<> (responseDto ("finish", "you only can fire three turns!!!"), HttpStatus.CREATED);
+                if(mySalvo.getFireLocations ().size ()==0){
+                    if (salvos.size () == 0) {
+                        Salvo salvo = new Salvo ();
+                        salvo.setTurn (1);
+                        salvo.setFireLocations (mySalvo.getFireLocations ());
+                        gp.addSalvo (salvo);
+                        salvoRepository.save (salvo);
+                        return new ResponseEntity<> (responseDto ("success", salvo), HttpStatus.CREATED);
+                    } else {
+                        int beforeTurn = salvos.size ();
+                        Salvo salvo = new Salvo ();
+                        if (beforeTurn < 5) {
+                            salvo.setTurn (beforeTurn + 1);
+                            salvo.setFireLocations (mySalvo.getFireLocations ());
+                            gp.addSalvo (salvo);
+                            salvoRepository.save (salvo);
+                            return new ResponseEntity<> (responseDto ("success", salvo), HttpStatus.CREATED);
+                        } else {
+                            return new ResponseEntity<> (responseDto ("finish", "game over,you only can fire 5 turns!!!"), HttpStatus.CREATED);
+                        }
+                    }
+                }else {
+                    return new ResponseEntity<> (responseDto ("insufficient","you can fire more shots!!!"), HttpStatus.FORBIDDEN);
                 }
+            } else if(mySalvo.getFireLocations ().size ()>5){
+            return new ResponseEntity<> (responseDto ("cross","you can only fire five shots in one turn!!!"), HttpStatus.FORBIDDEN);
+            } else {
+               if (salvos.size () == 0) {
+                   Salvo salvo = new Salvo ();
+                   salvo.setTurn (1);
+                   salvo.setFireLocations (mySalvo.getFireLocations ());
+                   gp.addSalvo (salvo);
+                   salvoRepository.save (salvo);
+                   return new ResponseEntity<> (responseDto ("success", salvo), HttpStatus.CREATED);
+               } else {
+                   int beforeTurn = salvos.size ();
+                   Salvo salvo = new Salvo ();
+                   if (beforeTurn < 5) {
+                      salvo.setTurn (beforeTurn + 1);
+                      salvo.setFireLocations (mySalvo.getFireLocations ());
+                      gp.addSalvo (salvo);
+                      salvoRepository.save (salvo);
+                      return new ResponseEntity<> (responseDto ("success", salvo), HttpStatus.CREATED);
+                   } else {
+                     return new ResponseEntity<> (responseDto ("finish", "game over,you only can fire 5 turns!!!"), HttpStatus.FORBIDDEN);
+                   }
+               }
             }
-          }
         }
     }
 
@@ -554,310 +695,175 @@ public class SalvoController {
 
 
 
-
-
-
-
-//    private Object getCurrentGamePlayerSalvoDto (GamePlayer gamePlayer){
-//        Map<String,Object> turns = new HashMap<> ();
-//        Set<Salvo> currentGamePlayerSalvos=gamePlayer.getSalvos ();
+//    private Object makeGameStatus(GamePlayer gamePlayer,Long gpID){
+//        Object GameStatus="waiting";
+//        if (gamePlayer.getGame ().getGamePlayer ().size ()==1){
+//            GameStatus="waiting";
+//        }else {
+//            GamePlayer oponentGamePlayer = findOpponentGameplayer(gpID);
 //
-//        Set <GamePlayer> gamePlayers = gamePlayer.getGame ().getGamePlayer ();
-//        GamePlayer opponentGamePlayer = gamePlayers
-//                .stream ()
-//                .filter(gp -> !gp.getId ().equals (gamePlayer.getId ())).findFirst ().orElse (null);
+//            Map<String,Object> gamePlayerPlayerShipsStatus=finalShipsStatus(gpID);
+//            Map<String,Object> gamePlayerGetHitTurns=getHitTurnsDto(gamePlayer,oponentGamePlayer);
+//            Map<String,Object> opponentFinalShipsStatus=finalShipsStatus(oponentGamePlayer.getId ());
+//            Map<String,Object> opponentGetHitTurns=getHitTurnsDto(oponentGamePlayer,gamePlayer);
 //
-//        if(!opponentGamePlayer.equals (null)){
-//            Set<Ship> opponentShips=opponentGamePlayer.getShips ();
-//            for (Salvo salvo:currentGamePlayerSalvos) {
-//                ArrayList<String> carrierHitsPosition=new ArrayList<> ();
-//                ArrayList<String> battleshipHitsPosition=new ArrayList<> ();
-//                ArrayList<String> submarineHitsPosition=new ArrayList<> ();
-//                ArrayList<String> destroyerHitsPosition=new ArrayList<> ();
-//                ArrayList<String> patrolBoatHitsPosition=new ArrayList<> ();
+//            System.out.println ("sizeeeeeeeeeeeeeeeeeeeeee----"+gamePlayerGetHitTurns.size ());
 //
-//                List<String> currentPlayerFireLocations=salvo.getFireLocations ();
-//                for (String OponentFireLocation:currentPlayerFireLocations) {
-//                    for (Ship ship : opponentShips) {
-//                        if (ship.getShipType ().equals ("Carrier")) {
-//                            if (ship.getLocations ().contains (OponentFireLocation.replace ("PL", ""))) {
-//                                carrierHitsPosition.add (OponentFireLocation.replace ("PL", ""));
-//                            }
-//                        } else if (ship.getShipType ().equals ("Battleship")) {
-//                            if (ship.getLocations ().contains (OponentFireLocation.replace ("PL", ""))) {
-//                                battleshipHitsPosition.add (OponentFireLocation.replace ("PL", ""));
-//                            }
-//                        } else if (ship.getShipType ().equals ("Submarine")) {
-//                            if (ship.getLocations ().contains (OponentFireLocation.replace ("PL", ""))) {
-//                                submarineHitsPosition.add (OponentFireLocation.replace ("PL", ""));
-//                            }
-//                        } else if (ship.getShipType ().equals ("Destroyer")) {
-//                            if (ship.getLocations ().contains (OponentFireLocation.replace ("PL", ""))) {
-//                                destroyerHitsPosition.add (OponentFireLocation.replace ("PL", ""));
-//                            }
-//                        } else {
-//                            if (ship.getLocations ().contains (OponentFireLocation.replace ("PL", ""))) {
-//                                patrolBoatHitsPosition.add (OponentFireLocation.replace ("PL", ""));
-//                            }
+//            if(gamePlayerGetHitTurns.size ()==0 && opponentGetHitTurns.size ()==0){
+//
+//                if(gamePlayer.getId ()>oponentGamePlayer.getId ()){
+//                    GameStatus="waiting";
+//                }else {
+//                    GameStatus="yourTurn";
+//                }
+//                System.out.println ("rrrrrrrrrrrrrrrrr"+GameStatus.toString ());
+//
+//            }else if(gamePlayerGetHitTurns.size ()>opponentGetHitTurns.size ()){
+//
+//                GameStatus="waiting";
+//
+//            }else if(gamePlayerGetHitTurns.size ()<opponentGetHitTurns.size ()){
+//                System.out.println ("wwwwwwwwwwwwwwwwwwwwwwwwww");
+//                GameStatus="yourTurn";
+//            }else if(gamePlayerGetHitTurns.size ()==opponentGetHitTurns.size() && gamePlayerGetHitTurns.size ()!=0 && opponentGetHitTurns.size ()!=0){
+//
+//                if((Integer) gamePlayerPlayerShipsStatus.get ("totalShipsLeft")==0 && (Integer)opponentFinalShipsStatus.get ("totalShipsLeft")==0){
+//                    GameStatus="gameOver,tie";
+//                }
+//                if((Integer)gamePlayerPlayerShipsStatus.get ("totalShipsLeft")==0 && (Integer)opponentFinalShipsStatus.get ("totalShipsLeft")!=0){
+//                    GameStatus="gameOver,youLoose";
+//                }
+//                if((Integer)gamePlayerPlayerShipsStatus.get ("totalShipsLeft")!=0&&(Integer)opponentFinalShipsStatus.get ("totalShipsLeft")==0){
+//                    GameStatus="gameOver,youWin";
+//                }
+//                if ((Integer)gamePlayerPlayerShipsStatus.get ("totalShipsLeft")!=0&&(Integer)opponentFinalShipsStatus.get ("totalShipsLeft")!=0){
+//
+//                    if (gamePlayer.getSalvos ().size ()==5 && oponentGamePlayer.getSalvos ().size ()==5){
+//
+//                        if ((Integer)gamePlayerPlayerShipsStatus.get ("totalHits") > (Integer)opponentFinalShipsStatus.get ("totalHits")){
+//                            GameStatus="gameOver,youLoose";
+//                        }
+//                        if (gamePlayerPlayerShipsStatus.get ("totalHits")==opponentFinalShipsStatus.get ("totalHits")){
+//                            GameStatus="gameOver,tie";
+//                        }
+//                        if ((Integer)gamePlayerPlayerShipsStatus.get ("totalHits") < (Integer)opponentFinalShipsStatus.get ("totalHits")){
+//                            GameStatus="gameOver,youWin";
+//                        }
+//                    }else{
+//                        if(gamePlayer.getId ()>oponentGamePlayer.getId ()){
+//                            GameStatus="waiting";
+//                        }else {
+//                            GameStatus="yourTurn";
 //                        }
 //                    }
 //                }
+//            }
+//        }
+//        System.out.println ("sssssssssssssssssssssss"+GameStatus);
+//        return GameStatus;
+//    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//    private Object makeGameStatus(GamePlayer gamePlayer,Long gpID){
+//        Object GameStatus="waiting";
+//        if (gamePlayer.getGame ().getGamePlayer ().size ()==1){
+//            GameStatus="waiting";
+//        }else {
+//            GamePlayer oponentGamePlayer = findOpponentGameplayer(gpID);
 //
-//                Map<String, Object> carrierHits = new HashMap<> ();
-//                carrierHits.put ("hitTimes",carrierHitsPosition.size ());
-//                carrierHits.put ("shipStatus",shipStatus("Carrier",carrierHitsPosition.size ()));
-//                ArrayList<String> carrierHitsPositiontemp=new ArrayList<> ();
-//                carrierHitsPositiontemp.addAll (carrierHitsPosition);
-//                carrierHits.put ("hitsPosition",carrierHitsPositiontemp);
+//            Map<String,Object> gamePlayerPlayerShipsStatus=finalShipsStatus(gpID);
+//            Map<String,Object> gamePlayerGetHitTurns=getHitTurnsDto(gamePlayer,oponentGamePlayer);
+//            Map<String,Object> opponentFinalShipsStatus=finalShipsStatus(oponentGamePlayer.getId ());
+//            Map<String,Object> opponentGetHitTurns=getHitTurnsDto(oponentGamePlayer,gamePlayer);
 //
-//                Map<String, Object> battleshipHits = new HashMap<> ();
-//                battleshipHits.put ("hitTimes",battleshipHitsPosition.size ());
-//                battleshipHits.put ("shipStatus",shipStatus("Battleship",battleshipHitsPosition.size ()));
-//                ArrayList<String> battleshipHitsPositiontemp=new ArrayList<> ();
-//                battleshipHitsPositiontemp.addAll (battleshipHitsPosition);
-//                battleshipHits.put ("hitsPosition",battleshipHitsPositiontemp);
+//            System.out.println ("sizeeeeeeeeeeeeeeeeeeeeee----"+gamePlayerGetHitTurns.size ());
 //
-//                Map<String, Object> submarineHits = new HashMap<> ();
-//                submarineHits.put ("hitTimes",submarineHitsPosition.size ());
-//                submarineHits.put ("shipStatus",shipStatus("Submarine",submarineHitsPosition.size ()));
-//                ArrayList<String> submarineHitsPositiontemp=new ArrayList<> ();
-//                submarineHitsPositiontemp.addAll (submarineHitsPosition);
-//                submarineHits.put ("hitsPosition",submarineHitsPositiontemp);
+//            if(gamePlayerGetHitTurns.size ()==0 && opponentGetHitTurns.size ()==0){
 //
-//                Map<String, Object> destroyerHits = new HashMap<String, Object> ();
-//                destroyerHits.put ("hitTimes", destroyerHitsPosition.size ());
-//                destroyerHits.put ("shipStatus",shipStatus("Destroyer",destroyerHitsPosition.size ()));
-//                ArrayList<String> destroyerHitsPositiontemp=new ArrayList<> ();
-//                destroyerHitsPositiontemp.addAll (destroyerHitsPosition);
-//                destroyerHits.put ("hitsPosition", destroyerHitsPositiontemp);
-//
-//                Map<String, Object> patrolBoatHits = new HashMap<> ();
-//                patrolBoatHits.put ("hitTimes",patrolBoatHitsPosition.size ());
-//                patrolBoatHits.put ("shipStatus",shipStatus("PatrolBoat",patrolBoatHitsPosition.size ()));
-//                ArrayList<String> patrolBoatHitsPositiontemp=new ArrayList<> ();
-//                patrolBoatHitsPositiontemp.addAll (patrolBoatHitsPosition);
-//                patrolBoatHits.put ("hitsPosition",patrolBoatHitsPositiontemp);
-//
-//                Map<String, Object> currentPlayerHits = new HashMap<> ();
-//                currentPlayerHits.put ("Carrier", carrierHits);
-//                currentPlayerHits.put ("Battleship", battleshipHits);
-//                currentPlayerHits.put ("Submarine", submarineHits);
-//                currentPlayerHits.put ("Destroyer", destroyerHits);
-//                currentPlayerHits.put ("PatrolBoat", patrolBoatHits);
-//
-//                currentPlayerHits.put ("shipsLeft", shipsLeft(currentPlayerHits));
-//
-//                turns.put ("turn"+salvo.getTurn (),currentPlayerHits );
+//                if(gamePlayer.getId ()>oponentGamePlayer.getId ()){
+//                    GameStatus="waiting";
+//                }else {
+//                    GameStatus="yourTurn";
+//                }
+//                System.out.println ("rrrrrrrrrrrrrrrrr"+GameStatus.toString ());
 //            }
 //
-//            Set<String> set=turns.keySet ();
-//            for(String s:set){
-//                Map<String, Object> value= (HashMap<String, Object>) turns.get (s);
-//                Set<String> set2=value.keySet ();
-//                for(String s2:set2){
-//                    Object obj=value.get (s2);
+//            if (gamePlayer.getSalvos ().size ()==5 && oponentGamePlayer.getSalvos ().size ()==5){
+//
+//                if((Integer) gamePlayerPlayerShipsStatus.get ("totalShipsLeft")==0 && (Integer)opponentFinalShipsStatus.get ("totalShipsLeft")==0){
+//                    GameStatus="gameOver,tie";
+//                }
+//                if((Integer)gamePlayerPlayerShipsStatus.get ("totalShipsLeft")==0 && (Integer)opponentFinalShipsStatus.get ("totalShipsLeft")!=0){
+//                    GameStatus="gameOver,youLoose";
+//                }
+//                if((Integer)gamePlayerPlayerShipsStatus.get ("totalShipsLeft")!=0&&(Integer)opponentFinalShipsStatus.get ("totalShipsLeft")==0){
+//                    GameStatus="gameOver,youWin";
+//                }
+//
+//                if((Integer)gamePlayerPlayerShipsStatus.get ("totalShipsLeft")!=0&&(Integer)opponentFinalShipsStatus.get ("totalShipsLeft")!=0){
+//
+//                    if ((Integer)gamePlayerPlayerShipsStatus.get ("totalHits") > (Integer)opponentFinalShipsStatus.get ("totalHits")){
+//                        GameStatus="gameOver,youLoose";
+//                    }
+//                    if (gamePlayerPlayerShipsStatus.get ("totalHits")==opponentFinalShipsStatus.get ("totalHits")){
+//                        GameStatus="gameOver,tie";
+//                    }
+//                    if ((Integer)gamePlayerPlayerShipsStatus.get ("totalHits") < (Integer)opponentFinalShipsStatus.get ("totalHits")){
+//                        GameStatus="gameOver,youWin";
+//                    }
 //                }
 //            }
 //
-//            TreeMap<String, Object> turnsTreeMap = new TreeMap<> (
-//                    (Comparator<String>) (s1, s2) -> s1.compareTo(s2)
-//            );
-//            turnsTreeMap.putAll(turns);
 //
-//            return  turnsTreeMap;
-//        }else{
-//            return "wating";}
-//    }
 //
-//    private Object getOponentGamePlayerSalvoDto (GamePlayer gamePlayer){
-//        Set <GamePlayer> gamePlayers = gamePlayer.getGame ().getGamePlayer ();
-//        Set<Ship> gamePlayerShips=gamePlayer.getShips ();
-//        Map<String, Object> turns = new HashMap<String, Object> ();
-//        GamePlayer opponentGamePlayer = gamePlayers
-//                .stream ()
-//                .filter(gp -> !gp.getId ().equals (gamePlayer.getId ())).findFirst ().orElse (null);
 //
-//        if(!opponentGamePlayer.equals (null)){
-//            ArrayList<String> carrierHitsPosition=new ArrayList<> ();
-//            ArrayList<String> battleshipHitsPosition=new ArrayList<> ();
-//            ArrayList<String> submarineHitsPosition=new ArrayList<> ();
-//            ArrayList<String> destroyerHitsPosition=new ArrayList<> ();
-//            ArrayList<String> patrolBoatHitsPosition=new ArrayList<> ();
 //
-//            Set<Salvo> opponentGamePlayerSalvos=opponentGamePlayer.getSalvos ();
-//            for (Salvo salvo:opponentGamePlayerSalvos){
-//                List<String> opponentFireLocations=salvo.getFireLocations ();
-//                for (String opponentFireLocation:opponentFireLocations){
-//                    for(Ship ship:gamePlayerShips) {
-//                        if (ship.getShipType ().equals ("Carrier")) {
-//                            if (ship.getLocations ().contains (opponentFireLocation.replace ("PL", ""))) {
-//                                carrierHitsPosition.add(opponentFireLocation.replace ("PL", ""));
-//                            }
-//                        }else if (ship.getShipType ().equals ("Battleship")){
-//                            if (ship.getLocations ().contains (opponentFireLocation.replace ("PL", ""))) {
-//                                battleshipHitsPosition.add(opponentFireLocation.replace ("PL", ""));
-//                            }
-//                        }else if (ship.getShipType ().equals ("Submarine")){
-//                            if (ship.getLocations ().contains (opponentFireLocation.replace ("PL", ""))) {
-//                                submarineHitsPosition.add(opponentFireLocation.replace ("PL", ""));
-//                            }
-//                        }else if (ship.getShipType ().equals ("Destroyer")){
-//                            if (ship.getLocations ().contains (opponentFireLocation.replace ("PL", ""))) {
-//                                destroyerHitsPosition.add(opponentFireLocation.replace ("PL", ""));
-//                            }
-//                        }else{
-//                            if (ship.getLocations ().contains (opponentFireLocation.replace ("PL", ""))) {
-//                                patrolBoatHitsPosition.add(opponentFireLocation.replace ("PL", ""));
-//                            }
+//
+//            else if(gamePlayerGetHitTurns.size ()>opponentGetHitTurns.size ()){
+//
+//                GameStatus="waiting";
+//
+//            }else if(gamePlayerGetHitTurns.size ()<opponentGetHitTurns.size ()){
+//                System.out.println ("wwwwwwwwwwwwwwwwwwwwwwwwww");
+//                GameStatus="yourTurn";
+//            }else if(gamePlayerGetHitTurns.size ()==opponentGetHitTurns.size() && gamePlayerGetHitTurns.size ()!=0 && opponentGetHitTurns.size ()!=0){
+//
+//
+//                if ((Integer)gamePlayerPlayerShipsStatus.get ("totalShipsLeft")!=0&&(Integer)opponentFinalShipsStatus.get ("totalShipsLeft")!=0){
+//
+//                    if (gamePlayer.getSalvos ().size ()==5 && oponentGamePlayer.getSalvos ().size ()==5){
+//
+//                        if ((Integer)gamePlayerPlayerShipsStatus.get ("totalHits") > (Integer)opponentFinalShipsStatus.get ("totalHits")){
+//                            GameStatus="gameOver,youLoose";
+//                        }
+//                        if (gamePlayerPlayerShipsStatus.get ("totalHits")==opponentFinalShipsStatus.get ("totalHits")){
+//                            GameStatus="gameOver,tie";
+//                        }
+//                        if ((Integer)gamePlayerPlayerShipsStatus.get ("totalHits") < (Integer)opponentFinalShipsStatus.get ("totalHits")){
+//                            GameStatus="gameOver,youWin";
+//                        }
+//                    }else{
+//                        if(gamePlayer.getId ()>oponentGamePlayer.getId ()){
+//                            GameStatus="waiting";
+//                        }else {
+//                            GameStatus="yourTurn";
 //                        }
 //                    }
 //                }
-//
-//                Map<String, Object> carrierHits = new HashMap<> ();
-//                carrierHits.put ("hitTimes",carrierHitsPosition.size ());
-//                carrierHits.put ("shipStatus",shipStatus("Carrier",carrierHitsPosition.size ()));
-//                ArrayList<String> carrierHitsPositiontemp=new ArrayList<> ();
-//                carrierHitsPositiontemp.addAll (carrierHitsPosition);
-//                carrierHits.put ("hitsPosition",carrierHitsPositiontemp);
-//
-//                Map<String, Object> battleshipHits = new HashMap<String, Object> ();
-//                battleshipHits.put ("hitTimes",battleshipHitsPosition.size ());
-//                battleshipHits.put ("shipStatus",shipStatus("Battleship",battleshipHitsPosition.size ()));
-//                ArrayList<String> battleshipHitsPositiontemp=new ArrayList<> ();
-//                battleshipHitsPositiontemp.addAll (battleshipHitsPosition);
-//                battleshipHits.put ("hitsPosition",battleshipHitsPositiontemp);
-//
-//                Map<String, Object> submarineHits = new HashMap<String, Object> ();
-//                submarineHits.put ("hitTimes",submarineHitsPosition.size ());
-//                submarineHits.put ("shipStatus",shipStatus("Submarine",submarineHitsPosition.size ()));
-//                ArrayList<String> submarineHitsPositiontemp=new ArrayList<> ();
-//                submarineHitsPositiontemp.addAll (submarineHitsPosition);
-//                submarineHits.put ("hitsPosition",submarineHitsPositiontemp);
-//
-//                Map<String, Object> destroyerHits = new HashMap<String, Object> ();
-//                destroyerHits.put ("hitTimes", destroyerHitsPosition.size ());
-//                destroyerHits.put ("shipStatus",shipStatus("Destroyer",destroyerHitsPosition.size ()));
-//                ArrayList<String> destroyerHitsPositiontemp=new ArrayList<> ();
-//                destroyerHitsPositiontemp.addAll (destroyerHitsPosition);
-//                destroyerHits.put ("hitsPosition", destroyerHitsPositiontemp);
-//
-//                Map<String, Object> patrolBoatHits = new HashMap<String, Object> ();
-//                patrolBoatHits.put ("hitTimes",patrolBoatHitsPosition.size ());
-//                patrolBoatHits.put ("shipStatus",shipStatus("PatrolBoat",patrolBoatHitsPosition.size ()));
-//                ArrayList<String> patrolBoatHitsPositiontemp=new ArrayList<> ();
-//                patrolBoatHitsPositiontemp.addAll (patrolBoatHitsPosition);
-//                patrolBoatHits.put ("hitsPosition",patrolBoatHitsPositiontemp);
-//
-//                Map<String, Object> opponentHits = new HashMap<String, Object> ();
-//                opponentHits.put ("CarrierHits", carrierHits);
-//                opponentHits.put ("BattleshipHits", battleshipHits);
-//                opponentHits.put ("SubmarineHits", submarineHits);
-//                opponentHits.put ("DestroyerHits", destroyerHits);
-//                opponentHits.put ("PatrolBoatHits", patrolBoatHits);
-//                opponentHits.put ("shipsLeft", shipsLeft(opponentHits));
-//
-//                turns.put ("turn"+salvo.getTurn (),opponentHits );
-//
 //            }
-//
-//            Set<String> set=turns.keySet ();
-//            for(String s:set){
-//                HashMap<String, Object> value= (HashMap<String, Object>) turns.get (s);
-//                Set<String> set2=value.keySet ();
-//                for(String s2:set2){
-//                    Object obj=value.get (s2);
-//                }
-//            }
-//
-//            TreeMap<String, Object> turnsTreeMap = new TreeMap<> (
-//                    (Comparator<String>) (s1, s2) -> s1.compareTo(s2)
-//            );
-//            turnsTreeMap.putAll(turns);
-//
-//            return  turnsTreeMap;
-//        }else{
-//            return "wating";}
+//        }
+//        System.out.println ("sssssssssssssssssssssss"+GameStatus);
+//        return GameStatus;
 //    }
-
-
-
-
-//    private int shipsLeft(Map<String, Object> shipsHits) {
-//        int num=5;
-//        Set<String> shipsSet=shipsHits.keySet ();
-//        for(String s:shipsSet){
-//            int shipLength;
-//            if(s.equals ("Carrier")){
-//                shipLength=5;
-//            }else if(s.equals ("Battleship")){
-//                shipLength=4;
-//            }else if(s.equals ("Submarine")){
-//                shipLength=4;
-//            }else if(s.equals ("Destroyer")){
-//                shipLength=3;
-//            }else{
-//                shipLength=2;
-//            }
-//            Map<String,Object> shipHitsMap= (Map<String, Object>) shipsHits.get (s);
-//            Set<String> shipHitSet=shipHitsMap.keySet ();
-//            for(String ss:shipHitSet){
-//                if (ss.equals ("hitTimes")){
-//                    if (shipHitsMap.get (ss).equals (shipLength)){
-//                        num--;
-//                    }
-//                }
-//            }
-//        }
-//
-//        return num;
-//    }
-//
-//    private String shipStatus(String shipName,int shipHitsPositionLength){
-//        String shipStatus;
-//        int shipLength;
-//        if(shipName.equals ("Carrier")){
-//            shipLength=5;
-//        }else if(shipName.equals ("Battleship")){
-//            shipLength=4;
-//        }else if(shipName.equals ("Submarine")){
-//            shipLength=4;
-//        }else if(shipName.equals ("Destroyer")){
-//            shipLength=3;
-//        }else{
-//            shipLength=2;
-//        }
-//
-//        if(shipHitsPositionLength==0) {
-//            shipStatus = "safe";
-//        }else if(shipHitsPositionLength==shipLength){
-//            shipStatus = "sunk";
-//        }else{
-//            shipStatus = "sink";
-//        }
-//        return shipStatus;
-//    }
-
-
-
-// if (isGuest (authentication)) {
-//         return new ResponseEntity<> (responseDto ("tip","You need to signUp!!!"), HttpStatus.UNAUTHORIZED);
-//        } else{
-//        if(gamePlayers.size ()==2){
-//        if(players.contains (getCurrentUser (authentication))){
-//        return new ResponseEntity<> (responseDto ("ok1","you r coming to you own game!!!"), HttpStatus.ACCEPTED);
-//        }else {
-//        return new ResponseEntity<> (responseDto ("sorry","Game is full!!!"), HttpStatus.FORBIDDEN);}
-//        } else if(gamePlayers.size ()==1){
-//        if(gamePlayers.get(0).getPlayer ().getId ().equals (getCurrentUser (authentication).getId ())){
-//        return new ResponseEntity<> (responseDto ("existingpId",gamePlayers.get(0).getPlayer ().getId ()), HttpStatus.ACCEPTED);
-//        }else {
-//        return new ResponseEntity<> (responseDto ("forbidden","you can not cheat"), HttpStatus.FORBIDDEN);
-//        }
-//
-//        } else {
-//        GamePlayer gp2=new GamePlayer (new Date (), game, getCurrentUser (authentication));
-//        gameRepository.save (game);
-//        gamePlayerRepository.save (gp2);
-//        return new ResponseEntity<> (responseDto("gp2Id",gp2.getId ()),HttpStatus.CREATED);
-//        }
-//        }

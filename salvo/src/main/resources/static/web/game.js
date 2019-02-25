@@ -3,20 +3,14 @@
 /* global$ */
 
 
-
-//var GameViewUrl="http://localhost:8080/api/game_view/"+document.querySelector('[data-page]').getAttribute("data-page");
-
-//console.log(GameViewUrl);
-
-
-
-
 var app = new Vue({
     el: "#vue-gameView-app",
     data: {
+        sound: null,
         GameViewDataUrl: "",
         realGameViewUrl: "",
-        tableColums: ["", 1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+        opponentGameViewDataUrl: null,
+        tableColums: ["XYZ", 1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
         tableColumsForIDs: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
         tableRows: ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J"],
         mySHips: [],
@@ -36,6 +30,9 @@ var app = new Vue({
         ship: {},
         shipDirection: "",
         yourShips: [],
+        yourShipsReady: false,
+        yourShipsFromBackLength: 0,
+        oppShipsFromBackLength: 0,
         createShipBottonStatus: "active",
         CarrierIsSelected: false,
         BattleshipIsSelected: false,
@@ -44,11 +41,26 @@ var app = new Vue({
         PatrolBoatIsSelected: false,
         salvo: {},
         yourSalvos: [],
+        yourSalvosReady: false,
         aim: false,
-        opponentGameplayerSalvos: {},
+        gamePlayers: [],
+        hitsOnYou: {},
+        hitsOnYouClone: {},
+        hitOnYouUpdateData: [],
+        lastTurnHitOnYou: {},
+        lastTurnHitOnYouArr: [],
+        hitsOnOppent: {},
+        hitsOnOppentClone: {},
+        hitsOnOppentUpdateData: [],
+        lastTurnHitOnOpp: {},
+        lastTurnHitOnOppArr: [],
         lastTurnObj: {},
         lastTurn: "",
-        currentGameplayerSalvos: {},
+        hitsOnOppent: {},
+        gameStatus: "yourTurn",
+        gameReadyStatus: "",
+        currentTurn: 1,
+        youScore: 0,
         json: []
     },
 
@@ -59,10 +71,8 @@ var app = new Vue({
             var url_string = window.location.href
             var url = new URL(url_string);
             var c = url.searchParams.get("gp");
-            console.log(c);
             this.GameViewUrl = "http://localhost:8080/api/game_view/" + c;
             this.currentGpId = c;
-            console.log(this.GameViewUrl);
 
             fetch(this.GameViewUrl, {
                     method: "GET",
@@ -74,29 +84,53 @@ var app = new Vue({
                     throw new Error(response.statusText);
                 })
                 .then(function (json) {
-                    console.log(json)
                     app.gameView = json.success;
+                    app.gamePlayers = app.gameView.gamePlayers;
                     app.mySHips = app.gameView.ships;
-                    app.opponentGameplayerSalvos = app.gameView.opponentGameplayerSalvos;
-                    app.currentGameplayerSalvos = app.gameView.currentGameplayerSalvos;
-                    console.log(app.opponentGameplayerSalvos);
-                    app.opponentHiCurrentPlayer();
 
-                    console.log(app.gameView);
-                    console.log(app.mySHips);
+                    app.yourShipsFromBackLength = app.gameView.ships.length;
+                    app.oppShipsFromBackLength = app.gameView.oppShipsFromBackLength;
+                    console.log("yourShipsFromBackLength-----------------", app.yourShipsFromBackLength)
+                    console.log("oppShipsFromBackLength-----------------", app.oppShipsFromBackLength)
+
+
+                    app.gameStatus = app.gameView.gameStatus;
+                    console.log("gameStatus-----------------", app.gameStatus)
+
+                    //                    if (app.gameStatus == "yourTurn") {
+                    //                        app.countdown();
+                    //                    }
+
+                    app.countdown();
+
+                    app.youScore = app.gameView.score;
+
+                    app.hitsOnYou = app.gameView.hitsOnYou;
+                    app.hitsOnOppent = app.gameView.hitsOnOppent;
+
+                    app.hitsOnYouClone = Object.assign({}, app.hitsOnYou);
+                    app.hitsOnOppentClone = Object.assign({}, app.hitsOnOppent);
+
+                    app.hitOnYouUpdateData = app.hitUpdate(app.hitsOnYouClone);
+                    app.lastTurnHitOnYou = app.hitOnYouUpdateData[app.hitOnYouUpdateData.length - 1]
+
+                    app.hitsOnOppentUpdateData = app.hitUpdate(app.hitsOnOppentClone);
+                    app.lastTurnHitOnOpp = app.hitsOnOppentUpdateData[app.hitsOnOppentUpdateData.length - 1]
+
+                    app.currentTurn = app.hitsOnOppentUpdateData.length + 1;
+                    console.log("currentTurn-----------------", app.currentTurn)
+
 
                     app.getCurrentPlayers();
-                    console.log(app.currentPlayerName);
 
                     app.allSalvos = app.gameView.salvos;
-                    console.log(app.allSalvos);
+                    console.log("allSalvos-----------------", app.allSalvos)
+
 
                     app.getCurrentPlayersSalvos();
-                    console.log(app.mySalvos);
-                    console.log(app.opponentSlavos);
 
                     app.myShipsTable();
-                    console.log(app.yourShips.length);
+
                     if (app.yourShips.length != 0) {
                         app.CarrierIsSelected = true;
                         app.BattleshipIsSelected = true;
@@ -105,8 +139,13 @@ var app = new Vue({
                         ap.PatrolBoatIsSelected = true;
                     }
 
-                    console.log(app.mySalvos);
-                    
+                    app.gameViewUpDate();
+                    app.mySalvosmiss();
+                    app.hitUpdateTabe();
+                    //app.countdown();
+
+
+
                 })
                 .catch(function (error) {
                     console.log("Request failed: " + error.message);
@@ -114,7 +153,6 @@ var app = new Vue({
         },
 
         getCurrentPlayers: function () {
-
             for (var key in this.gameView.gamePlayers) {
                 if (this.currentGpId == this.gameView.gamePlayers[key].id) {
                     this.currentPlayerName = this.gameView.gamePlayers[key].player.name;
@@ -123,11 +161,8 @@ var app = new Vue({
         },
 
         getCurrentPlayersSalvos: function () {
-            console.log(this.allSalvos);
             for (var key in this.allSalvos) {
-                console.log(this.allSalvos[key])
                 for (var key2 in this.allSalvos[key]) {
-                    console.log(Object.keys(this.allSalvos[key][key2]));
                     if (Object.keys(this.allSalvos[key][key2]) == this.currentGpId) {
                         this.mySalvos = this.allSalvos[key];
                     } else {
@@ -138,7 +173,6 @@ var app = new Vue({
         },
 
         placeShips: function (gpId) {
-            console.log(gpId);
 
             fetch("/api/games/players/" + gpId + "/ships", {
                     credentials: 'include',
@@ -169,8 +203,18 @@ var app = new Vue({
                         alert(data.overlap)
                         window.location.reload(this.GameViewUrl);
                     } else {
-                        window.location.reload(this.GameViewUrl);
-                        this.createShipBottonStatus = "inactive";
+
+                        app.knowShipsReady();
+
+                        if (app.yourShipsReady == true) {
+                            setTimeout(function () {
+                                window.location.reload(this.GameViewUrl);
+                                this.createShipBottonStatus = "inactive";
+                            }, 1500);
+                        } else {
+                            window.location.reload(this.GameViewUrl);
+                        }
+
                     }
                 })
                 .catch(function (error) {
@@ -179,15 +223,21 @@ var app = new Vue({
 
         },
 
+        knowShipsReady: function () {
+            if (this.yourShips.length == 5) {
+                this.yourShipsReady = true;
+            } else {
+                this.yourShipsReady = false;
+            }
+        },
+
         aiming: function (item) {
             this.aim = item;
         },
 
         salvosFire: function (gpId) {
-            console.log(gpId);
-            console.log("Ron", JSON.stringify({
-                "fireLocations": this.yourSalvos
-            }))
+            gpId = this.currentGpId;
+
             fetch("/api/games/players/" + gpId + "/salvos", {
                     credentials: 'include',
                     headers: {
@@ -216,12 +266,25 @@ var app = new Vue({
                     } else if (data.cross) {
                         alert(data.cross)
                         window.location.reload(this.GameViewUrl);
-                    } else if (data.finish) {
+                    } else if (data.success) {
+
+                        app.knowSalvoReady();
+
+                        if (app.yourSalvosReady == true) {
+                            setTimeout(function () {
+                                window.location.reload(this.GameViewUrl);
+                            }, 1000);
+                        } else {
+                            window.location.reload(this.GameViewUrl);
+                        }
+
+
+
+                    } else {
+
                         alert(data.finish)
                         window.location.reload(this.GameViewUrl);
-                    } else {
-                        console.log("Request success:", data.success)
-                        window.location.reload(this.GameViewUrl);
+
                     }
                 })
                 .catch(function (error) {
@@ -230,11 +293,18 @@ var app = new Vue({
 
         },
 
+        knowSalvoReady: function () {
+            if (this.yourSalvos.length == 5) {
+                this.yourSalvosReady = true;
+            } else {
+                this.yourSalvosReady = false;
+            }
+        },
+
         mouseover: function (id) {
-            console.log('mouse in');
             var overId = Array.from(id);
-            console.log(overId);
-            console.log(overId[0]);
+            //console.log(overId);
+            //console.log(overId[0]);
             if (overId[0] == "P") {
 
                 if (this.aim == true) {
@@ -249,7 +319,7 @@ var app = new Vue({
 
                         } else {
                             salvosLocation.style.backgroundColor = "red";
-                            console.log(overId);
+                            //console.log(overId);
                         }
 
                     }
@@ -261,11 +331,11 @@ var app = new Vue({
                 for (var i = 0; i < this.ship.dimension; i++) {
                     if (this.shipDirection == "horizontal") {
                         var idPlus = overId[0] + (parseInt(overId[1]) + i);
-                        console.log("idPlus-in-1:-----------------" + idPlus);
+                        //console.log("idPlus-in-1:-----------------" + idPlus);
                     }
                     if (this.shipDirection == "vertical") {
                         var idPlus = this.tableRows[this.tableRows.indexOf(overId[0]) + i] + overId[1];
-                        console.log("idPlus-in-2:-----------------" + idPlus);
+                        //console.log("idPlus-in-2:-----------------" + idPlus);
                     }
 
                     var shipLocation = document.getElementById(idPlus);
@@ -280,7 +350,6 @@ var app = new Vue({
         },
 
         mouseout: function (id) {
-            console.log('mouse out');
             var overId = Array.from(id);
             if (overId[0] == "P") {
                 if (this.aim == true) {
@@ -293,7 +362,7 @@ var app = new Vue({
 
                         } else {
                             salvosLocation.style.backgroundColor = "";
-                            console.log(overId);
+                            //console.log(overId);
                         }
 
                     }
@@ -306,13 +375,13 @@ var app = new Vue({
 
                         if (this.shipDirection == "horizontal") {
                             var idPlus = overId[0] + (parseInt(overId[1]) + i);
-                            console.log("idPlus-0ut-1:" + idPlus);
+                            //console.log("idPlus-0ut-1:" + idPlus);
                         }
 
 
                         if (this.shipDirection == "vertical") {
                             var idPlus = this.tableRows[this.tableRows.indexOf(overId[0]) + i] + overId[1];
-                            console.log("idPlus-in-2:-----------------" + idPlus);
+                            //console.log("idPlus-in-2:-----------------" + idPlus);
                         }
 
                         var shipLocation = document.getElementById(idPlus);
@@ -331,12 +400,12 @@ var app = new Vue({
 
                         if (this.shipDirection == "horizontal") {
                             var idPlus = overId[0] + (parseInt(overId[1]) + i);
-                            console.log("idPlus-0ut-2:" + idPlus);
+                            //console.log("idPlus-0ut-2:" + idPlus);
                         }
 
                         if (this.shipDirection == "vertical") {
                             var idPlus = this.tableRows[this.tableRows.indexOf(overId[0]) + i] + overId[1];
-                            console.log("idPlus-out-2:-----------------" + idPlus);
+                            //console.log("idPlus-out-2:-----------------" + idPlus);
                         }
 
                         var shipLocation = document.getElementById(idPlus);
@@ -359,12 +428,7 @@ var app = new Vue({
         },
 
         myShipsTable: function (ships) {
-            console.log(ships)
-            console.log(this.mySHips)
             var arrTempOpponentSalvosS = [];
-
-            console.log(arrTempOpponentSalvosS)
-
             var tablebody = document.getElementById("myShipsTb");
             var tableRows = tablebody.rows;
             var carriersIds = [];
@@ -372,28 +436,21 @@ var app = new Vue({
             var SubmarinesIds = [];
             var PatrolBoatsIds = [];
             var DestroyersIds = [];
-
-
             for (var i = 0; i < this.mySHips.length; i++) {
                 for (var j = 0; j < tableRows.length; j++) {
                     for (var n = 0; n < tableRows[j].childNodes.length; n++) {
-
                         if (this.mySHips[i].locations.indexOf(tableRows[j].childNodes[n].id) > -1 && this.mySHips[i].shipType == "Carrier") {
                             carriersIds.push(tableRows[j].childNodes[n].id);
                         }
-
                         if (this.mySHips[i].locations.indexOf(tableRows[j].childNodes[n].id) > -1 && this.mySHips[i].shipType == "Battleship") {
                             BattleshipsIds.push(tableRows[j].childNodes[n].id);
                         }
-
                         if (this.mySHips[i].locations.indexOf(tableRows[j].childNodes[n].id) > -1 && this.mySHips[i].shipType == "Submarine") {
                             SubmarinesIds.push(tableRows[j].childNodes[n].id);
                         }
-
                         if (this.mySHips[i].locations.indexOf(tableRows[j].childNodes[n].id) > -1 && this.mySHips[i].shipType == "PatrolBoat") {
                             PatrolBoatsIds.push(tableRows[j].childNodes[n].id);
                         }
-
                         if (this.mySHips[i].locations.indexOf(tableRows[j].childNodes[n].id) > -1 && this.mySHips[i].shipType == "Destroyer") {
                             DestroyersIds.push(tableRows[j].childNodes[n].id);
                         }
@@ -409,7 +466,6 @@ var app = new Vue({
 
             if (carriersIds != []) {
                 for (var x = 0; x < carriersIds.length; x += 5) {
-                    console.log("every carriersIds:----" + carriersIds[x])
                     if (Array.from(carriersIds[x])[0] == Array.from(carriersIds[x + 1])[0]) {
                         document.getElementById(carriersIds[x]).setAttribute("class", "carrierImgH")
                     } else {
@@ -420,7 +476,6 @@ var app = new Vue({
 
             if (BattleshipsIds != []) {
                 for (var x = 0; x < BattleshipsIds.length; x += 4) {
-                    console.log("every BattleshipsIds:----" + BattleshipsIds[x])
                     if (Array.from(BattleshipsIds[x])[0] == Array.from(BattleshipsIds[x + 1])[0]) {
                         document.getElementById(BattleshipsIds[x]).setAttribute("class", "battleshipH")
                     } else {
@@ -431,7 +486,6 @@ var app = new Vue({
 
             if (SubmarinesIds != []) {
                 for (var x = 0; x < SubmarinesIds.length; x += 3) {
-                    console.log("every SubmarinesIds:----" + SubmarinesIds[x])
                     if (Array.from(SubmarinesIds[x])[0] == Array.from(SubmarinesIds[x + 1])[0]) {
                         document.getElementById(SubmarinesIds[x]).setAttribute("class", "submarinesH")
                     } else {
@@ -443,7 +497,6 @@ var app = new Vue({
 
             if (PatrolBoatsIds != []) {
                 for (var x = 0; x < PatrolBoatsIds.length; x += 2) {
-                    console.log("every PatrolBoatsIds:----" + PatrolBoatsIds[x])
                     if (Array.from(PatrolBoatsIds[x])[0] == Array.from(PatrolBoatsIds[x + 1])[0]) {
                         document.getElementById(PatrolBoatsIds[x]).setAttribute("class", "patrolboatH")
                     } else {
@@ -454,7 +507,6 @@ var app = new Vue({
 
             if (DestroyersIds != []) {
                 for (var x = 0; x < DestroyersIds.length; x += 3) {
-                    console.log("every DestroyersIds:----" + DestroyersIds[x])
                     if (Array.from(DestroyersIds[x])[0] == Array.from(DestroyersIds[x + 1])[0]) {
                         document.getElementById(DestroyersIds[x]).setAttribute("class", "destroyerH")
                     } else {
@@ -465,8 +517,6 @@ var app = new Vue({
 
         },
 
-        /*-------------------place different ship---------------------*/
-
         creatShips: function (shipType, dimension, color) {
             this.ship = {
                 "shipType": shipType,
@@ -474,7 +524,6 @@ var app = new Vue({
                 "dimension": dimension,
                 "color": color
             }
-            console.log(this.ship)
         },
 
         creatSalvos: function (turn, gp) {
@@ -483,7 +532,6 @@ var app = new Vue({
                 "fireLocations": [],
                 "gamePlayer": gp,
             }
-            console.log(this.salvo)
         },
 
         changeDirection: function (shipDirection) {
@@ -511,18 +559,11 @@ var app = new Vue({
         },
 
         shipPlace: function (id) {
-
-            console.log('click:' + id);
-            console.log(this.yourShips)
             var overId = Array.from(id);
-
             var shipLocationTemp = [];
-
             for (var i = 0; i < this.ship.dimension; i++) {
-
                 if (this.shipDirection == "horizontal") {
                     var idPlus = overId[0] + (parseInt(overId[1]) + i);
-                    console.log("idPlus-click-A1:" + idPlus);
                 }
 
                 if (this.shipDirection == "vertical") {
@@ -537,23 +578,14 @@ var app = new Vue({
                     shipLocationTemp.push(idPlus);
                 }
             }
-
-            console.log("shipLocationTemp:----" + shipLocationTemp);
-            console.log("this.ship.dimension:----" + this.ship.dimension);
-
-
             if (shipLocationTemp.length < this.ship.dimension) {
                 alert("you r placing you ship on the beach now!!!")
                 return;
             }
-
             if (shipLocationTemp.length == this.ship.dimension) {
                 this.ship.locations = shipLocationTemp;
                 if (this.yourShips.length != 0) {
-
                     var status = true;
-
-                    console.log(this.yourShips);
                     for (var key in this.yourShips) {
                         for (var i = 0; i < this.ship.locations.length; i++) {
                             if (this.yourShips[key].locations.includes(this.ship.locations[i])) {
@@ -563,21 +595,15 @@ var app = new Vue({
                             }
                         }
                     }
-
-                    console.log(status);
-
                     if (status == true) {
                         for (var i = 0; i < this.ship.dimension; i++) {
 
                             if (this.shipDirection == "horizontal") {
                                 var idPlus = overId[0] + (parseInt(overId[1]) + i);
-                                console.log("idPlus-click-B1:" + idPlus);
                             }
-
                             if (this.shipDirection == "vertical") {
                                 var idPlus = this.tableRows[this.tableRows.indexOf(overId[0]) + i] + overId[1];
                             }
-
                             var shipLocation = document.getElementById(idPlus);
                             shipLocation.style.backgroundColor = this.ship.color;
                             shipLocation.innerHTML = idPlus;
@@ -587,21 +613,15 @@ var app = new Vue({
                         return;
                     }
 
-
-                    console.log(this.yourShips);
-
-
                 } else {
                     for (var i = 0; i < this.ship.dimension; i++) {
 
                         if (this.shipDirection == "horizontal") {
                             var idPlus = overId[0] + (parseInt(overId[1]) + i);
                         }
-
                         if (this.shipDirection == "vertical") {
                             var idPlus = this.tableRows[this.tableRows.indexOf(overId[0]) + i] + overId[1];
                         }
-
                         var shipLocation = document.getElementById(idPlus);
                         shipLocation.style.backgroundColor = this.ship.color;
                         shipLocation.innerHTML = idPlus;
@@ -616,52 +636,203 @@ var app = new Vue({
         salvosAim: function (id) {
             if (this.aim == true) {
                 var overId = Array.from(id);
-
                 var salvosLocation = document.getElementById(id);
-                if (salvosLocation == null) {
-
-                } else {
+                if (salvosLocation == null) {} else {
                     if (this.yourSalvos.includes(id)) {
                         this.yourSalvos.slice(this.yourSalvos.indexOf(id), 1);
                         salvosLocation.style.backgroundColor = "";
-
                     } else {
                         this.yourSalvos.push(id);
                         salvosLocation.style.backgroundColor = "blue";
                     }
                 }
-
             } else {
                 alert("you need to click aim!!!!")
             }
         },
 
-        opponentHiCurrentPlayer: function () {
-
-            var arr = Object.keys(this.opponentGameplayerSalvos);
-            var lastTurn = "turn" + arr.length;
-            var lastTurnObj = this.opponentGameplayerSalvos[lastTurn];
-            var lastTurnSalvos = [];
-            for (var key in lastTurnObj) {
-                console.log(lastTurnObj[key])
-                if (lastTurnObj[key].hasOwnProperty('hitsPosition')) {
-                    if (lastTurnObj[key].hitsPosition != 0) {
-                        for (var x = 0; x < lastTurnObj[key].hitsPosition.length; x++) {
-                            lastTurnSalvos.push(lastTurnObj[key].hitsPosition[x])
-                        }
-                    }
+        hitUpdate: function (obj) {
+            var arr = [];
+            var arrTemp = [];
+            for (var key in obj) {
+                arr.push(obj[key]);
+            }
+            var arrTemp = Array.from(arr);
+            for (var x = 1; x < arrTemp.length; x++) {
+                for (var key in arrTemp[x]) {
+                    arrTemp[x][key].hitTimes = arrTemp[x][key].hitTimes + arrTemp[x - 1][key].hitTimes;
+                    arrTemp[x][key].hitsPosition = arrTemp[x][key].hitsPosition.concat(arrTemp[x - 1][key].hitsPosition);
                 }
             }
-            console.log(lastTurnSalvos)
-            lastTurnSalvos.forEach(el => {
-                console.log(el.replace("PL", ""))
-                var someDiv = document.createElement("div");
-                someDiv.setAttribute("class", "opponentFireLocation");
-                document.getElementById(el.replace("PL", "")).append(someDiv);
-            })
+            for (var y = 0; y < arrTemp.length; y++) {
+                var shipLeft = 5;
+                for (var key in arrTemp[y]) {
+                    if (arrTemp[y][key].hitTimes == arrTemp[y][key].shipLength) {
+                        arrTemp[y][key]['shipStatus'] = "sunk";
+                        shipLeft--;
 
+                    } else if (arrTemp[y][key].hitTimes == 0) {
+                        arrTemp[y][key]['shipStatus'] = "safe";
+                    } else {
+                        arrTemp[y][key]['shipStatus'] = "sink";
+                    }
+                }
+                arrTemp[y]['shipLeft'] = shipLeft;
+                arrTemp[y]['turn'] = 'turn' + (y + 1);
+            }
+            return arrTemp;
+        },
+
+        mySalvosmiss: function () {
+
+            var lastTurnHitOnYou = this.hitOnYouUpdateData[this.hitOnYouUpdateData.length - 1];
+
+            for (var key in lastTurnHitOnYou) {
+                if (lastTurnHitOnYou[key].hitsPosition != null) {
+                    lastTurnHitOnYou[key].hitsPosition.forEach(el => {
+                        for (var x = 0; x < this.allSalvos.length; x++) {
+                            for (var y = 0; y < this.allSalvos[x].fireLocations.length; y++) {
+                                var salvoId = this.allSalvos[x].fireLocations[y];
+                                if (salvoId != el) {
+                                    document.getElementById(salvoId).setAttribute("class", "missingPoint");
+                                } else {
+
+                                }
+                            }
+                        }
+                    });
+                }
+            }
+
+            //hitUpdateTabe();
+
+        },
+
+        hitUpdateTabe: function () {
+            var lastTurnHitOnYou = this.hitOnYouUpdateData[this.hitOnYouUpdateData.length - 1]
+            for (var key in lastTurnHitOnYou) {
+                if (lastTurnHitOnYou[key].hitsPosition != null) {
+
+                    lastTurnHitOnYou[key].hitsPosition.forEach(el => {
+                        //console.log("elllllllllllllllllllll---", el)
+                        var hitStatus1 = document.createElement("div");
+                        hitStatus1.setAttribute("class", "hitStatusTest1");
+                        if (document.getElementById(el).firstChild != null) {
+                            document.getElementById(el).removeChild();
+                            document.getElementById(el).appendChild(hitStatus1);
+                        } else {
+                            document.getElementById(el).appendChild(hitStatus1);
+                        }
+
+
+                    });
+
+                }
+            }
+
+
+            var lastTurnHitOnOpp = this.hitsOnOppentUpdateData[this.hitsOnOppentUpdateData.length - 1]
+            for (var key in lastTurnHitOnOpp) {
+                if (lastTurnHitOnOpp[key].hitsPosition != null) {
+                    lastTurnHitOnOpp[key].hitsPosition.forEach(el => {
+                        el = "PL" + el;
+                        //console.log("eeeeeeeeeeeeeeeeeeeeeeeel---", el)
+                        var hitStatus2 = document.createElement("div");
+                        hitStatus2.setAttribute("class", "hitStatusTest1");
+                        if (document.getElementById(el).firstChild != null) {
+                            document.getElementById(el).removeChild();
+                            document.getElementById(el).appendChild(hitStatus2);
+                        } else {
+                            document.getElementById(el).appendChild(hitStatus2);
+                        }
+
+                    });
+                }
+            }
+
+        },
+
+        gameViewUpDate: function () {
+
+            console.log("in counter gamestatus is vvvvvvvvvvvvvvvvvvvvvvv", this.gameStatus)
+            console.log("in counter score is sssssssssssssssssssssssssssss", this.youScore)
+
+
+            if (this.gameStatus == "waiting") {
+
+                if (this.gamePlayers.length = 2) {
+                    if (this.yourShipsFromBackLength == 5 && this.oppShipsFromBackLength == 5) {
+                        this.gameReadyStatus = "Launch Attack";
+                        setTimeout(function () {
+                            app.getGameViewData();
+                        }, 3000);
+
+                    } else if (this.yourShipsFromBackLength == 0 && this.oppShipsFromBackLength == 0) {
+                        this.gameReadyStatus = "Deploy the fleet";
+                        setTimeout(function () {
+                            app.getGameViewData();
+                        }, 60000);
+
+                    } else {
+                        this.gameReadyStatus = "Waiting for ready";
+                        setTimeout(function () {
+                            app.getGameViewData();
+                        }, 3000);
+                    }
+
+                } else {
+                    this.gameReadyStatus = "Waiting joiner";
+                    setTimeout(function () {
+                        app.getGameViewData();
+                    }, 3000);
+                }
+
+
+
+            } else if (this.gameStatus == "yourTurn") {
+
+                //window.location.reload(this.GameViewUrl);
+                this.gameReadyStatus = this.currentTurn;
+                setTimeout(function () {
+                    app.salvosFire(this.currentGpId);
+
+                }, 30000);
+
+            } else {
+                this.gameReadyStatus = "Game over";
+                this.hitUpdateTabe();
+            }
+
+            console.log("in counter status is sssssssssssssssssssssssssssss", this.gameReadyStatus)
+
+        },
+
+        goToLeaderBoard: function () {
+            window.location.assign("http://localhost:8080/web/games.html")
+        },
+
+        countdown: function () {
+
+            if (this.gameStatus == "yourTurn") {
+
+                var countDownDate = new Date().getTime() + 31000;
+                var x = setInterval(function () {
+
+                    var now = new Date().getTime();
+                    var distance = countDownDate - now;
+                    var seconds = Math.floor((distance % (1000 * 60)) / 1000);
+                    document.getElementById("countTime").innerHTML = seconds + "s ";
+                    if (distance < 0) {
+                        clearInterval(x);
+                        document.getElementById("countTime").innerHTML = "EXPIRED";
+                    }
+                }, 1000);
+
+
+            } else {
+                clearInterval(x);
+            }
         }
-
     },
 
     computed: {
@@ -669,25 +840,7 @@ var app = new Vue({
     },
     created: function () {
         this.getGameViewData();
+        //this.countdown();
     }
 
 });
-
-
-
-
-//        opponentSlavosTable: function () {
-//            console.log("---------------", this.opponentSlavos)
-//            for (var key in this.opponentSlavos) {
-//                console.log(this.opponentSlavos[key])
-//                for (var key2 in this.opponentSlavos[key]) {
-//                    console.log(this.opponentSlavos[key][key2])
-//                    this.opponentSlavos[key][key2].forEach(el => {
-//                        console.log(el.replace("PL", ""))
-//                        var someDiv = document.createElement("div");
-//                        someDiv.setAttribute("class", "opponentFireLocation");
-//                        document.getElementById(el.replace("PL", "")).append(someDiv);
-//                    })
-//                }
-//            }
-//        }
