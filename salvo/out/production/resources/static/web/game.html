@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Ship Locations!</title>
+    <meta name="viewport" content="width=divice-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <link rel="stylesheet" href="main.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.7.0/animate.min.css">
+
+</head>
+
+<body>
+
+    <div id="vue-gameView-app">
+
+        <div class="coolTitle">
+            <h1 class="chrome">Salvo!!!</h1>
+        </div>
+
+        <div>
+            <div class="showGameInfo" v-on:click="seeMygame();">
+                <div class="currentPlayers">
+                </div>
+            </div>
+        </div>
+        <div class="allInGame">
+
+            <div class="middle">
+                <div class="tableBeautyfy">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th v-for="columName in tableColums">{{columName}}</th>
+                            </tr>
+                        </thead>
+                        <tbody id="myShipsTb">
+                            <tr v-for="rowName in tableRows">
+                                <td>{{rowName}}</td>
+
+                                <template v-for="columName in tableColumsForIDs">
+
+                                    <td v-bind:id=rowName+columName v-on:click="shipPlace(rowName+columName)" v-on:mouseover="mouseover(rowName+columName)" v-on:mouseout="mouseout(rowName+columName)"></td>
+
+                                </template>
+
+                            </tr>
+                        </tbody>
+
+                    </table>
+                </div>
+
+                <div>
+                    <div class="showGameInfo">
+                        <div class="subtitle">
+                            My salvos table
+                        </div>
+                    </div>
+                </div>
+
+
+                <div class="tableBeautyfy" id="mySalvosTb">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th v-for="columName in tableColums">{{columName}}</th>
+                            </tr>
+                        </thead>
+                        <tbody id="playerSalvosTb">
+                            <tr v-for="rowName in tableRows">
+                                <td>{{rowName}}</td>
+
+                                <template v-for="columName in tableColumsForIDs">
+                                    <td v-bind:id="'PL'+rowName+columName" v-on:click="salvosAim('PL'+rowName+columName)" v-on:mouseover="mouseover('PL'+rowName+columName)" v-on:mouseout="mouseout('PL'+rowName+columName)"></td>
+                                </template>
+
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="right">
+                <h4>
+                    <button v-if="CarrierIsSelected!=true" class="Carrier" v-on:click="creatShips('Carrier',5,'red');selecteButton('Carrier')">Carrier</button>
+                </h4>
+                <h4>
+                    <button v-if="BattleshipIsSelected!=true" class="Battleship" v-on:click="creatShips('Battleship',4,'blue');selecteButton('Battleship')">Battleship</button>
+                </h4>
+                <h4>
+                    <button v-if="SubmarineIsSelected!=true" class="Submarine" v-on:click="creatShips('Submarine',3,'purple');selecteButton('Submarine')">Submarine</button>
+                </h4>
+                <h4>
+                    <button v-if="DestroyerIsSelected!=true" class="Destroyer" v-on:click="creatShips('Destroyer',3,'green');selecteButton('Destroyer')">Destroyer</button>
+                </h4>
+                <h4>
+                    <button v-if="PatrolBoatIsSelected!=true" class="PatrolBoat" v-on:click="creatShips('PatrolBoat',2,'lawnGreen');selecteButton('PatrolBoat')">PatrolBoat</button>
+                </h4>
+                <div class="directions">
+                    <h3><button class="direction" v-on:click="changeDirection('horizontal')">Horizontal</button></h3>
+                    <h3><button class="direction" v-on:click="changeDirection('vertical')">Vertical</button></h3>
+                </div>
+                <h3><button class="deploy" v-on:click="placeShips(currentGpId)">Deploy Ships</button></h3>
+                <!-----------------------------------------salvos------------------------------------------->
+                <h3><button class="direction" v-on:click="aiming(true)">Aim</button></h3>
+                <h3><button id="salvo" class="go" v-on:click="salvosFire(currentGpId)">SALVO</button></h3>
+
+            </div>
+
+        </div>
+
+        <div class="history">
+            <div class="gameHistory">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Turns</th>
+                            <th>Hit on you</th>
+                            <th>Left</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="turnUpDate in hitOnYouUpdateData">
+                            <th>{{turnUpDate.turn}}</th>
+                            <td class="shipStatus">
+                                <template v-for="(shipValue,shipName) in turnUpDate">
+                                    <div v-if="shipValue.hitTimes!=null">{{shipName}}------hit:{{shipValue.hitTimes}}-----{{shipValue.shipStatus}}</div>
+                                </template>
+                            </td>
+                            <td class="shipLeft">{{turnUpDate.shipLeft}}</td>
+
+                        </tr>
+                    </tbody>
+
+                </table>
+            </div>
+
+            <div class="gameHistory">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Turns</th>
+                            <th>Hit on Opponent</th>
+                            <th>Left</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="turnUpDate in hitsOnOppentUpdateData">
+                            <th>{{turnUpDate.turn}}</th>
+                            <td class="shipStatus">
+                                <template v-for="(shipValue,shipName) in turnUpDate">
+                                    <div v-if="shipValue.hitTimes!=null">{{shipName}}------hit:{{shipValue.hitTimes}}-----{{shipValue.shipStatus}}</div>
+                                </template>
+                            </td>
+                            <td class="shipsLeft">{{turnUpDate.shipLeft}}</td>
+                        </tr>
+
+                    </tbody>
+                </table>
+            </div>
+
+
+        </div>
+
+        <div>
+            <div v-if="yourSalvosReady==true">
+                <object height="20" width="20" data="sounds/shotgun.mp3"></object></div>
+            <div v-if="yourShipsReady==true">
+                <object height="20" width="20" data="sounds/fleetSet.mp3"></object></div>
+        </div>
+
+<!--
+        <div v-if="gameStatus=='waiting'" class="turnResult">
+            <div class="oppTurnText">Oppent's Turn</div>
+        </div>
+        <div v-if="gameStatus=='gameOver,youWin'" class="turnResult">
+            <div class="winTurnText">WIN</div>
+        </div>
+        <div v-if="gameStatus=='gameOver,youLoose'" class="turnResult">
+            <div class="loseTurnText">LOSE</div>
+        </div>
+-->
+
+        <div class="gameBg">
+        </div>
+
+
+
+    </div>
+
+    <script src=" https://cdn.jsdelivr.net/npm/vue/dist/vue.js"> </script>
+    <script src="game.js"></script>
+
+</body>
+
+</html>

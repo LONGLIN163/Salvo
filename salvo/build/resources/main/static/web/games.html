@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Salvo!</title>
+    <meta name="viewport" content="width=divice-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <link rel="stylesheet" href="main.css">
+
+
+</head>
+
+<body>
+    <div id="vue-app">
+        <!-------------------------show the the buttons------------------------->
+
+
+        <div class="coolTitle">
+            <h1 class="chrome">Salvo!!!</h1>
+        </div>
+
+        <div class="login" v-if="activeSth=='login'">
+            <input class="inputStyle" type="text" placeholder="Username" name="userName" v-model="userName">
+            <input class="inputStyle" type="password" placeholder="Password" name="password" v-model="password">
+            <button class="loginStyle" type="submit" v-on:click="login()">Login</button>
+            <button class="signupStyle" type="submit" v-on:click="signup()">Signup</button>
+        </div>
+
+        <div class="logout" v-if="activeSth=='logout'">
+
+            <input class="inputStyle" type="text" placeholder="Username" name="userName" v-model="userName">
+            <input class="inputStyle" type="password" placeholder="Password" name="password" v-model="password">
+
+            <button class="logoutStyle" type="submit" v-on:click="logout()">Logout</button>
+        </div>
+
+        <!-------------------------show the leaderboard------------------------->
+
+        <div class="subtitle2">
+            Leaderboard
+        </div>
+
+        <div class="someGameTable">
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>name</th>
+                        <th v-on:click="sortedLeaderByValue()">total score</th>
+                        <th v-on:click="sortedLeaderByValue('wins')">wins</th>
+                        <th v-on:click="sortedLeaderByValue('ties')">ties</th>
+                        <th v-on:click="sortedLeaderByValue('loses')">loses</th>
+                        <th v-on:click="sortedLeaderByValue('playTimes')">playTimes</th>
+                    </tr>
+                </thead>
+                <tbody id="leaderBoardTb">
+                    <tr v-for="player in changedEachPlayerArr">
+                        <td>{{player.name}}</td>
+                        <td>{{player.totalScore}}</td>
+                        <td>{{player.wins}}</td>
+                        <td>{{player.ties}}</td>
+                        <td>{{player.loses}}</td>
+                        <td>{{player.playTimes}}</td>
+                    </tr>
+                </tbody>
+
+            </table>
+        </div>
+
+        <!-------------------------show all the games------------------------->
+
+        <div class="subtitle2">
+            Show all games
+        </div>
+
+        <div class="creatGameBg">
+            <h4>
+                <button class="createNewGame" v-on:click="createNewGame">Create new game</button>
+            </h4>
+        </div>
+
+        <div class="allgames">
+
+            <div v-for="game in games" class="eachGame2" v-bind:id=game.id>
+
+                <div>
+                    <button class='playerInGame' v-on:click="joinGame(game.id,currentPlayer.id,game.gamePlayer[0].id)">
+                        <h4>{{game.gamePlayer[0].player.name}}</h4>
+                    </button>
+                </div>
+
+                <div class="vs">
+                    <h4> vs </h4>
+                </div>
+
+
+                <div v-if="game.gamePlayer[1]!=null">
+                    <button class="playerInGame" v-on:click="joinGame(game.id,game.gamePlayer[1].player.id,game.gamePlayer[1].id)">
+                        <h4>{{game.gamePlayer[1].player.name}}</h4>
+                    </button>
+                </div>
+
+                <div v-if="game.gamePlayer[1]==null">
+                    <button class="playerInGameWaitting" v-on:click="joinGame(game.id,null,null)">
+                        <h4>join this game</h4>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div>
+            <button class="gamesExplanation">
+                <h4>Leaderboard</h4>
+                <p class="gamesDetails">Click thead in each colum,you can rank by different Options.</p><br /><br />
+
+                <h4>The game list</h4>
+                <p class="gamesDetails">Sort by create time.From top to down,fine the latest games to join,or create a new game.</p>
+
+            </button></div>
+
+        <div>
+            <button class="gamesAttention">
+                <h4>Attention</h4>
+                <p class="gamesDetails">Because attach two many Game logic,previous test data maybe can't satisfy the current game logics.If this happens,please create a new game to test!!!</p>
+            </button></div>
+
+
+
+    </div>
+av
+
+
+
+
+
+
+    <script src=" https://cdn.jsdelivr.net/npm/vue/dist/vue.js"> </script>
+    <script src="games.js"></script>
+</body>
+
+</html>
+
+
+
+
+
+<!--
+        <div class="allgames">
+
+            <div v-for="game in games" class="eachGame2" v-bind:id=game.id>
+
+                <div v-if="game.gamePlayer[1]==null">
+                    <button class='playerInGame' v-on:click="joinGame(game.id,'flag',null)">
+                        <h4>{{game.gamePlayer[0].player.name}}</h4>
+                    </button>
+                </div>
+
+                <div v-else>
+                    <button class='playerInGame' v-on:click="joinGame(game.id,game.gamePlayer[0].player.id,game.gamePlayer[0].id)">
+                        <h4>{{game.gamePlayer[0].player.name}}</h4>
+                    </button>
+                </div>
+
+
+                <div class="vs">
+                    <h4> vs </h4>
+                </div>
+
+
+                <div v-if="game.gamePlayer[1]!=null">
+                    <button v-bind:class="game.gamePlayer[1]==null?'playerInGameWaitting':'playerInGame'" v-on:click="joinGame(game.id,game.gamePlayer[1].player.id,game.gamePlayer[1].id)">
+                        <h4>{{game.gamePlayer[1].player.name}}</h4>
+                    </button>
+                </div>
+
+                <div v-else>
+                    <button v-bind:class="game.gamePlayer[1]==null?'playerInGameWaitting':'playerInGame'" v-on:click="joinGame(game.id,null,null)">
+                        <h4>join this game</h4>
+                    </button>
+                </div>
+            </div>
+        </div>
+-->

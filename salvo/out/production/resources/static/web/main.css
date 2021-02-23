@@ -1,0 +1,670 @@
+@import url(https://fonts.googleapis.com/css?family=Mr+Dafoe);
+@import url(https://fonts.googleapis.com/css?family=Titillium+Web:900);
+@import url(https://fonts.googleapis.com/css?family=Righteous);
+@import url(https://fonts.googleapis.com/css?family=Candal);
+
+@import url(https://fonts.googleapis.com/css?family=Permanent+Marker);
+
+@import url(https://fonts.googleapis.com/css?family=Monoton);
+
+
+/*.......................................first part table..........................................*/
+
+
+body {
+    background-image: url(https://images-eds-ssl.xboxlive.com/image?url=8Oaj9Ryq1G1_p3lLnXlsaZgGzAie6Mnu24_PawYuDYIoH77pJ.X5Z.MqQPibUVTc9K3rzTziZ02C_FOvN5ZRoSWZOYMx.EarAUUkkmuVEmInPep9a997FoZxmmo6bhpdlRMMGzNfp1lYldzhxwK7HcCNiZj7f.Vk00AWKY.uhqegyZQCZZjV1P2LB0j43sUrVC3XlknTapQOZEHnekZ1N_DcsmhkbPB0n6Ubkg6xqaI-&h=1080&w=1920&format=jpg);
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+}
+
+/*
+body {
+    background-image: url(https://static1.squarespace.com/static/530f924ee4b0ce7399024e62/t/57ac8c17e58c62449d45f89b/1470925848875/ocean+banner.jpg?format=1500w);
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+}
+*/
+
+
+html,
+body {
+    height: 2600px;
+}
+
+.coolTitle {
+    width: 800px;
+    margin-left: auto;
+    margin-right: auto;
+    text-align: center;
+    font-family: fantasy;
+    color: yellow;
+}
+
+.someGameTable {
+    width: 800px;
+    margin-left: auto;
+    margin-right: auto;
+    background-color: rgba(255, 255, 255, 0.5);
+    color: black;
+    text-align: center;
+    font-weight: bolder;
+}
+
+
+.allgames {
+    width: 800px;
+    margin-left: auto;
+    margin-right: auto;
+    color: black;
+    text-align: center;
+    font-weight: bolder;
+}
+
+
+.chrome {
+    background-image: -webkit-linear-gradient(#378DBC 0%, #B6E8F1 46%, #ffffff 50%, #32120E 54%, #FFC488 58%, #582C11 90%, #EC9B4E 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    -webkit-text-stroke: 4px #f5f5f5;
+    font-size: 120px;
+    font-family: 'Titillium Web', sans-serif;
+    font-style: italic;
+    margin: 0;
+    line-height: 1;
+}
+
+.chrome:before {
+    /*  content: 'CHROME';*/
+    position: absolute;
+    left: 0;
+    top: 0;
+    z-index: 0;
+    background-image: -webkit-linear-gradient(-40deg, transparent 0%, transparent 40%, #fff 50%, transparent 60%, transparent 100%);
+    background-position: -680px 0;
+    -webkit-background-clip: text;
+    -webkit-text-stroke: 0;
+    padding-right: 300px;
+    -webkit-animation-name: chrome_effect;
+    -webkit-animation-duration: 6s;
+    -webkit-animation-delay: 2s;
+    -webkit-animation-timing-function: linear;
+    -webkit-animation-iteration-count: infinite;
+}
+
+
+
+.eachGame2 {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 0px;
+    margin-bottom: 5px;
+    padding-bottom: 5px;
+    padding-top: 5px;
+    background-color: rgba(255, 255, 255, 0.5);
+}
+
+.playerInGame {
+    width: 150px;
+}
+
+
+li {
+    list-style-type: none;
+
+}
+
+ol {
+    width: 800px;
+    margin-left: auto;
+    margin-right: auto;
+    padding-bottom: 5px;
+    padding-top: 5px;
+    background-color: rgba(255, 255, 255, 0.5);
+}
+
+.creatGameBg {
+    width: 800px;
+    margin-left: auto;
+    margin-right: auto;
+    padding-bottom: 5px;
+    padding-top: 5px;
+    background-color: rgba(255, 255, 255, 0.5);
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+}
+
+
+td {
+    width: 80px;
+    height: 80px;
+    text-align: center;
+    border: 1px solid white;
+}
+
+
+th {
+    height: 80px;
+    border: 1px solid white;
+    text-align: center;
+    font-size: 16px;
+}
+
+
+
+.subtitle {
+    text-align: center;
+    margin-left: 200px;
+    margin-right: auto;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    background-color: rgba(100, 100, 100, 0.5);
+    font-size: 40px;
+    color: white;
+}
+
+
+.subtitle2 {
+    width: 800px;
+    text-align: center;
+    margin-left: auto;
+    margin-right: auto;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    background-color: rgba(100, 100, 100, 0.5);
+    font-size: 20px;
+    color: white;
+}
+
+
+.createNewGame {
+    height: 50px;
+    width: 200px;
+    background-color: yellow;
+    border: 3px solid white;
+    border-radius: 20px;
+    color: black;
+}
+
+
+
+/*.......................................main player game table..........................................*/
+
+.tableBeautyfy {
+    /*
+    height: 550px;
+    width: 800px;
+*/
+    margin-left: 200px;
+    margin-right: auto;
+    /*    background-color: rgba(255, 255, 255, 0.8);*/
+    color: black;
+    text-align: center;
+    font-weight: bolder;
+}
+
+.vs {
+    width: 200px;
+    text-align: center
+}
+
+.playerInGame {
+    width: 200px;
+    border: 3px solid white;
+    border-radius: 20px;
+}
+
+.playerInGameWaitting {
+    width: 200px;
+    background-color: red;
+    border: 3px solid white;
+    border-radius: 20px;
+}
+
+
+
+
+/*....................................opponent player game table.......................................*/
+
+.opponentSalvosTable {
+    margin-left: auto;
+    margin-right: auto;
+    background-color: rgba(255, 255, 255, 0.5);
+    color: black;
+    text-align: center;
+    font-weight: bolder;
+}
+
+.login {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    width: 800px;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 20px;
+}
+
+.logout {
+    width: 800px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.signup {
+    width: 800px;
+    margin-left: auto;
+    margin-right: auto;
+    margin-bottom: 2px;
+}
+
+.inputStyle {
+    padding-left: 10px;
+    width: 200px;
+    height: 30px;
+    border: 10px;
+    color: white;
+    background-color: rgba(255, 255, 255, 0.5);
+}
+
+.signupStyle {
+    width: 194px;
+    height: 30px;
+    border: 10px;
+    background-color: rgba(225, 0, 0, 0.5);
+    color: white;
+    background-color: red;
+}
+
+.loginStyle {
+    width: 192px;
+    height: 30px;
+    border: 10px;
+    background-color: rgba(100, 100, 100, 0.5);
+    color: white;
+    background-color: gray;
+}
+
+.logoutStyle {
+    width: 390px;
+    height: 30px;
+    border: 10px;
+    background-color: rgba(100, 100, 100, 0.5);
+    color: black;
+    background-color: yellow;
+}
+
+.right {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    /*    width: 250px;*/
+    margin-right: 10px;
+    margin-left: 10px;
+}
+
+.left {
+    position: absolute;
+    top: 120px;
+    left: 20px;
+}
+
+
+
+
+.allInGame {
+    margin-right: auto;
+    margin-left: auto;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+}
+
+.ready {
+    height: 100px;
+    width: 100px;
+    background-color: dimgrey;
+    border: 3px solid white;
+    border-radius: 50px;
+    color: white;
+}
+
+.Carrier {
+    height: 50px;
+    width: 160px;
+    background-color: red;
+    border: 3px solid white;
+    border-radius: 5px;
+    color: black;
+}
+
+.carrierImgH {
+    background-image: url("imgs/carrierH.png");
+    background-repeat: no-repeat;
+    width: 400px;
+    height: 80px;
+    position: absolute;
+    border: none;
+    z-index: -1;
+}
+
+.carrierImgV {
+    background-image: url("imgs/carrierV.png");
+    background-repeat: no-repeat;
+    width: 80px;
+    height: 400px;
+    position: absolute;
+    border: none;
+    z-index: -1;
+}
+
+.Battleship {
+    height: 50px;
+    width: 160px;
+    background-color: blue;
+    border: 3px solid white;
+    border-radius: 5px;
+    color: black;
+}
+
+.battleshipH {
+    background-image: url("imgs/battleshipH.png");
+    background-repeat: no-repeat;
+    width: 320px;
+    height: 80px;
+    position: absolute;
+    border: none;
+    z-index: -1;
+}
+
+.battleshipV {
+    background-image: url("imgs/battleshipV.png");
+    background-repeat: no-repeat;
+    width: 80px;
+    height: 320px;
+    position: absolute;
+    border: none;
+    z-index: -1;
+}
+
+.Submarine {
+    height: 50px;
+    width: 160px;
+    background-color: purple;
+    border: 3px solid white;
+    border-radius: 5px;
+    color: black;
+}
+
+.submarinesH {
+    background-image: url("imgs/submarineH.png");
+    background-repeat: no-repeat;
+    width: 240px;
+    height: 80px;
+    position: absolute;
+    border: none;
+    z-index: -1;
+}
+
+.submarinesV {
+    background-image: url("imgs/submarineV.png");
+    background-repeat: no-repeat;
+    width: 80px;
+    height: 240px;
+    position: absolute;
+    border: none;
+    z-index: -1;
+}
+
+.Destroyer {
+    height: 50px;
+    width: 160px;
+    background-color: green;
+    border: 3px solid white;
+    border-radius: 5px;
+    color: black;
+}
+
+.destroyerH {
+    background-image: url("imgs/destroyerH.png");
+    background-repeat: no-repeat;
+    width: 300px;
+    height: 80px;
+    position: absolute;
+    border: none;
+    z-index: -1;
+}
+
+.destroyerV {
+    background-image: url("imgs/destroyerV.png");
+    background-repeat: no-repeat;
+    width: 80px;
+    height: 300px;
+    position: absolute;
+    border: none;
+    z-index: -1;
+}
+
+
+.PatrolBoat {
+    height: 50px;
+    width: 160px;
+    background-color: lawnGreen;
+    border: 3px solid white;
+    border-radius: 5px;
+    color: black;
+}
+
+.patrolboatH {
+    background-image: url("imgs/patrolboatH.png");
+    background-repeat: no-repeat;
+    width: 160px;
+    height: 60px;
+    position: absolute;
+    border: none;
+    z-index: -1;
+}
+
+.patrolboatV {
+    background-image: url("imgs/patrolboatV.png");
+    background-repeat: no-repeat;
+    width: 60px;
+    height: 200px;
+    position: absolute;
+    border: none;
+    z-index: -1;
+}
+
+.Done {
+    height: 50px;
+    width: 160px;
+    background-color: dimgray;
+    border: 3px solid white;
+    border-radius: 5px;
+    color: black;
+}
+
+
+.go {
+    height: 100px;
+    width: 100px;
+    background-color: red;
+    border: 3px solid white;
+    border-radius: 50px;
+    color: white;
+}
+
+/*....................................odirections.......................................*/
+
+.directions {
+    width: 160px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+
+.direction {
+    height: 50px;
+    width: 160px;
+    background-color: grey;
+    border: 3px solid white;
+    border-radius: 5px;
+    color: black;
+}
+
+.deploy {
+    height: 100px;
+    width: 160px;
+    background-color: yellow;
+    border: 3px solid white;
+    border-radius: 5px;
+    color: black;
+}
+
+
+.SalvosButton {
+    height: 50px;
+    width: 200px;
+    background-color: aqua;
+    border: 3px solid white;
+    border-radius: 5px;
+    color: black;
+}
+
+/*....................................odirections.......................................*/
+.opponentFireLocation {
+    background-color: deeppink;
+    width: 60px;
+    height: 60px;
+}
+
+.history {
+    margin-left: 220px;
+    display: flex;
+}
+
+.gameHistory {
+    background-color: beige;
+    margin-top: 10px;
+    width: 440px;
+    font: 6px;
+    background-color: rgba(255, 255, 255, 0.5);
+    text-align: center;
+}
+
+.turns {
+    width: 180px;
+}
+
+.shipStatus {
+    width: 350px;
+}
+
+.shipsLeft {
+    width: 100px;
+}
+
+
+/*....................................odirections.......................................*/
+
+@-webkit-keyframes blinker {
+    from {
+        opacity: 2.0;
+    }
+
+    to {
+        opacity: 0.4;
+    }
+}
+
+.hitStatusTest1 {
+    /*    height: 80px;*/
+    height: 80px;
+    width: 80px;
+    border: 2px solid red;
+    /*    box-shadow: 0 0 20px red inset;*/
+    box-shadow: 0 0 20px red;
+    -webkit-animation-name: blinker;
+    -webkit-animation-duration: 0.6s;
+    -webkit-animation-iteration-count: infinite;
+    -webkit-animation-timing-function: ease-in-out;
+    -webkit-animation-direction: alternate;
+}
+
+.blink{
+    animation: blink 1s linear infinite;
+}
+
+@keyframes blink{
+0%{opacity: 0;}
+50%{opacity: .5;}
+100%{opacity: 1;}
+}
+
+
+.hitStatusTest2 {
+    height: 80px;
+    width: 80px;
+    background-image: url("imgs/fire.gif");
+    background-size: 80px 60px;
+    background-repeat: no-repeat;
+}
+
+.turnResult {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+}
+
+.oppTurnText {
+    width: 100%;
+    height: 100%;
+    text-align: center;
+    font-size: 60px;
+    font-weight: 1000;
+    color: yellow;
+    position: absolute;
+    top: 400px;
+    text-shadow: 5px 5px #FF0000;
+}
+
+.winTurnText {
+    width: 100%;
+    height: 100%;
+    text-align: center;
+    font-size: 80px;
+    font-weight: 1000;
+    color: red;
+    position: absolute;
+    top: 400px;
+    text-shadow: 5px 5px yellow;
+}
+
+.loseTurnText {
+    width: 100%;
+    height: 100%;
+    text-align: center;
+    font-size: 80px;
+    font-weight: 1000;
+    color: darkblue;
+    position: absolute;
+    top: 400px;
+    text-shadow: 5px 5px yellow;
+}
+
+
+.gameBg {
+    width: 880px;
+    margin-left: 220px;
+    height: 2600px;
+    position: absolute;
+    top: 120px;
+    background-color: powderblue;
+    z-index: -2;
+}
