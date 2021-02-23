@@ -777,7 +777,7 @@ var app = new Vue({
                         this.gameReadyStatus = "Waiting for ready";
                         setTimeout(function () {
                             app.getGameViewData();
-                        }, 3000);
+                        }, 30000);
                     }
 
                 } else {
